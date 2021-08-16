@@ -1,0 +1,7 @@
+.ipynb_checkpoints
+*.pyc
+.vs
+__pycache__/
+model_save
+pickle
+*.rar
