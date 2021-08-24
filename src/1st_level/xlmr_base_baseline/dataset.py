@@ -15,8 +15,8 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
     features = []
     for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
         tokenized_example = tokenizer(
-            example["question"],
-            example["context"],
+            question,
+            context,
             truncation="only_second",
             max_length=config.MAX_LEN,
             stride=config.DOC_STRIDE,
