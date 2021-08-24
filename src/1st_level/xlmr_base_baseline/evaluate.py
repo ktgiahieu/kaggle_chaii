@@ -50,7 +50,8 @@ def run(fold):
 
     
     losses = utils.AverageMeter()
-
+    predicted_labels_per_fold_start = []
+    predicted_labels_per_fold_end = []
     with torch.no_grad():
       
         tk0 = tqdm.tqdm(valid_data_loader, total=len(valid_data_loader))
@@ -81,10 +82,31 @@ def run(fold):
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs = outputs.cpu().detach().numpy()
-            predicted_labels.extend(outputs.squeeze(-1).tolist())
+            outputs_start = outputs_start.cpu().detach()
+            outputs_end = outputs_end.cpu().detach()
+
+            predicted_labels_per_fold_start.append(outputs_start)
+            predicted_labels_per_fold_end.append(outputs_end)
+    
+    # Raw predictions
+    predicted_labels_per_fold_start = torch.cat(
+        tuple(x for x in predicted_labels_per_fold_start), dim=0)
+    predicted_labels_per_fold_end = torch.cat(
+        tuple(x for x in predicted_labels_per_fold_end), dim=0)
+
+    predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
+    predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
+    
+    
+    #Post process 
+    #(predictions = {'id': 'predicted_text', ...} )
+    predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    df_valid['PredictionString'] = df_valid['id'].map(predictions)
+    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text'])).mean()
+
     print(f'Loss = {losses.avg}')
-    return losses.avg
+    return eval_score
 
 
 if __name__ == '__main__':
