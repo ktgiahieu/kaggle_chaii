@@ -103,7 +103,7 @@ if __name__ == '__main__':
             fold_scores.append(fold_score)
             writer.close()
 
-        if len(fold_score)==config.N_FOLDS and fold_score[0] is not None:
+        if len(fold_scores)==config.N_FOLDS and fold_scores[0] is not None:
             print('\nScores without SWA:')
             for i in range(config.N_FOLDS):
                 print(f'Fold={i}, Score = {fold_scores[i]}')

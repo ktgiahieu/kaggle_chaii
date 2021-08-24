@@ -38,7 +38,8 @@ def run():
         batch_size=config.VALID_BATCH_SIZE,
         num_workers=1)
     
-    predicted_labels = []
+    predicted_labels_start = []
+    predicted_labels_end = []
     all_models = []
     for seed in config.SEEDS:
         model = models.CommonlitModel(conf=model_config)
@@ -56,39 +57,68 @@ def run():
                 model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
             all_models[s].load_state_dict(torch.load(model_path, map_location="cuda"))
 
-        predicted_labels_per_fold = []
+        predicted_labels_per_fold_start = []
+        predicted_labels_per_fold_end = []
         with torch.no_grad():
             tk0 = tqdm.tqdm(data_loader, total=len(data_loader))
             for bi, d in enumerate(tk0):
                 ids = d['ids']
                 mask = d['mask']
-                labels = d['labels']
+                start_labels = d['start_labels']
+                end_labels = d['end_labels']
 
                 ids = ids.to(device, dtype=torch.long)
                 mask = mask.to(device, dtype=torch.long)
-                labels = labels.to(device, dtype=torch.float)
+                start_labels = start_labels.to(device, dtype=torch.float)
+                end_labels = start_labels.to(device, dtype=torch.float)
 
 
-                outputs_seeds = []
+                outputs_seeds_start, outputs_seeds_end = []
                 for s in range(len(config.SEEDS)):
-                    outputs = \
-                      all_models[s](ids=ids, mask=mask)
+                    outputs_start, outputs_end = all_models[s](ids=ids, mask=mask)
 
-                    outputs_seeds.append(outputs)
+                    outputs_seeds_start.append(outputs_start)
+                    outputs_seeds_end.append(outputs_end)
 
-                outputs = sum(outputs_seeds) / (len(config.SEEDS))
+                outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
+                outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
 
-                outputs = outputs.cpu().detach().numpy()
-                predicted_labels_per_fold.extend(outputs.squeeze(-1).tolist())
-        predicted_labels.append(predicted_labels_per_fold)
-    predicted_labels = np.mean(np.array(predicted_labels), axis=0).tolist()
+                outputs_start = outputs_start.cpu().detach().numpy()
+                outputs_end = outputs_end.cpu().detach().numpy()
+
+                predicted_labels_per_fold_start.append(outputs_start)
+                predicted_labels_per_fold_end.append(outputs_end)
+        
+        predicted_labels_per_fold_start = torch.cat(
+            tuple(x for x in predicted_labels_per_fold_start), dim=0)
+        predicted_labels_per_fold_end = torch.cat(
+            tuple(x for x in predicted_labels_per_fold_end), dim=0)
+
+        predicted_labels_start.append(predicted_labels_per_fold_start)
+        predicted_labels_end.append(predicted_labels_per_fold_end)
+    
+    # Raw predictions
+    predicted_labels_start = torch.stack(
+        tuple(x for x in predicted_labels_start), dim=0)
+    predicted_labels_start = torch.mean(predicted_labels_start, dim=0)
+    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1)
+
+    predicted_labels_end = torch.stack(
+        tuple(x for x in predicted_labels_end), dim=0)
+    predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
+    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1)
+
+    #Post process 
+    #(predictions = {'id': 'predicted_text', ...} )
+    predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
+                                                   (predicted_labels_start, predicted_labels_end))
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
         
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predicted_labels, handle)
+        pickle.dump(predictions, handle)
 
     del test_dataset
     del data_loader
