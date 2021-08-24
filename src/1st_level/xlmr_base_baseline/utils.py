@@ -22,7 +22,7 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
     example_id_to_index = {k: i for i, k in enumerate(examples["id"])}
     features_per_example = collections.defaultdict(list)
     for i, feature in enumerate(features):
-        features_per_example[example_id_to_index[feature["example_id"]]].append(i)
+        features_per_example[example_id_to_index[feature["example_ids"]]].append(i)
 
     predictions = collections.OrderedDict()
 
