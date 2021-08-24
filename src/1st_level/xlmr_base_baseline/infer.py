@@ -84,8 +84,8 @@ def run():
                 outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
                 outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
 
-                outputs_start = outputs_start.cpu().detach().numpy()
-                outputs_end = outputs_end.cpu().detach().numpy()
+                outputs_start = outputs_start.cpu().detach()
+                outputs_end = outputs_end.cpu().detach()
 
                 predicted_labels_per_fold_start.append(outputs_start)
                 predicted_labels_per_fold_end.append(outputs_end)
@@ -102,12 +102,12 @@ def run():
     predicted_labels_start = torch.stack(
         tuple(x for x in predicted_labels_start), dim=0)
     predicted_labels_start = torch.mean(predicted_labels_start, dim=0)
-    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1)
+    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
 
     predicted_labels_end = torch.stack(
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
-    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1)
+    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
 
     #Post process 
     #(predictions = {'id': 'predicted_text', ...} )
@@ -131,3 +131,28 @@ def run():
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     run()
+
+    #            outputs_start = outputs_start.cpu().detach().numpy()
+    #            outputs_end = outputs_end.cpu().detach().numpy()
+
+    #            predicted_labels_per_fold_start.append(outputs_start)
+    #            predicted_labels_per_fold_end.append(outputs_end)
+        
+    #    predicted_labels_per_fold_start = np.concatenate(
+    #        tuple(x for x in predicted_labels_per_fold_start), axis=0)
+    #    predicted_labels_per_fold_end = np.concatenate(
+    #        tuple(x for x in predicted_labels_per_fold_end), axis=0)
+
+    #    predicted_labels_start.append(predicted_labels_per_fold_start)
+    #    predicted_labels_end.append(predicted_labels_per_fold_end)
+    
+    ## Raw predictions
+    #predicted_labels_start = np.stack(
+    #    tuple(x for x in predicted_labels_start), axis=0)
+    #predicted_labels_start = np.mean(predicted_labels_start, axis=0)
+    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1)
+
+    #predicted_labels_end = np.stack(
+    #    tuple(x for x in predicted_labels_end), axis=0)
+    #predicted_labels_end = np.mean(predicted_labels_end, axis=0)
+    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1)
