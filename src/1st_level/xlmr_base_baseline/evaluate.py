@@ -35,9 +35,12 @@ def run(fold):
         model.eval()
         seed_models.append(model)
 
-    valid_dataset = dataset.CommonlitDataset(
-        texts=df_valid.text.values,
-        labels=df_valid.label.values)
+    valid_dataset = dataset.ChaiiDataset(
+        ids=df_valid.id.values,
+        contexts=df_valid.context.values,
+        questions=df_valid.question.values,
+        answers=df_valid.answer_text.values,
+        answer_starts=df_valid.answer_start.values)
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
@@ -54,28 +57,34 @@ def run(fold):
         for bi, d in enumerate(tk0):
             ids = d['ids']
             mask = d['mask']
-            labels = d['labels']
+            start_labels = d['start_labels']
+            end_labels = d['end_labels']
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            labels = labels.to(device, dtype=torch.float)
+            start_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = start_labels.to(device, dtype=torch.float)
 
-            outputs_seeds = []
+            outputs_seeds_start = []
+            outputs_seeds_end = []
             for i in range(len(config.SEEDS)):
-                outputs = seed_models[i](ids=ids, mask=mask)
+                outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
 
-                outputs_seeds.append(outputs)
+                outputs_seeds_start.append(outputs_start)
+                outputs_seeds_end.append(outputs_end)
 
-            outputs = sum(outputs_seeds) / len(config.SEEDS)
+            outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
+            outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
             
-            loss = engine.loss_fn(outputs, labels)
+            loss = engine.loss_fn(outputs_start, outputs_end,
+                           start_labels, end_labels)
             losses.update(loss.item(), ids.size(0))
-            tk0.set_postfix(loss=np.sqrt(losses.avg))
+            tk0.set_postfix(loss=losses.avg)
 
             outputs = outputs.cpu().detach().numpy()
             predicted_labels.extend(outputs.squeeze(-1).tolist())
-    print(f'RMSE = {np.sqrt(losses.avg)}')
-    return np.sqrt(losses.avg)
+    print(f'Loss = {losses.avg}')
+    return losses.avg
 
 
 if __name__ == '__main__':
@@ -89,7 +98,7 @@ if __name__ == '__main__':
         gc.collect()
 
     for i in range(config.N_FOLDS):
-        print(f'Fold={i}, RMSE = {fold_scores[i]}')
+        print(f'Fold={i}, Jaccard score = {fold_scores[i]}')
     print(f'Mean = {np.mean(fold_scores)}')
     print(f'Std = {np.std(fold_scores)}')
 

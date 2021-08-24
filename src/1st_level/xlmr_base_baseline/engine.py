@@ -51,7 +51,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                            start_labels, end_labels)
 
             losses.update(loss.item(), ids.size(0))
-            tk0.set_postfix(loss=np.sqrt(losses.avg))
+            tk0.set_postfix(loss=losses.avg)
 
             loss = loss / config.ACCUMULATION_STEPS   
             loss.backward()
@@ -79,7 +79,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                                     f"(from epoch {best_epoch})")                                    
             step += 1
 
-        writer.add_scalar('Loss/train', np.sqrt(losses.avg), (epoch+1)*len(train_data_loader))
+        writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
             val_jac_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
             if not best_val_jac_score or val_jac_score > best_val_jac_score:                    
@@ -136,6 +136,6 @@ def eval_fn(data_loader, model, device, iteration, writer):
             jaccards.update(np.mean(jaccard_scores), ids.size(0))
             losses.update(loss.item(), ids.size(0))
     
-    writer.add_scalar('Loss/val', np.sqrt(losses.avg), iteration)
-    print(f'RMSE iter {iteration}= {np.sqrt(losses.avg)}')
-    return np.sqrt(losses.avg)
+    writer.add_scalar('Loss/val', losses.avg, iteration)
+    print(f'Val loss iter {iteration}= {losses.avg}')
+    return losses.avg
