@@ -17,8 +17,6 @@ import utils
 
 def run():
     df_test = pd.read_csv(config.TEST_FILE)
-    df_test.loc[:, 'answer_start'] = 0
-    df_test.loc[:, 'answer_text'] = ''
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
@@ -28,9 +26,7 @@ def run():
     test_dataset = dataset.ChaiiDataset(
         ids=df_test.id.values,
         contexts=df_test.context.values,
-        questions=df_test.question.values,
-        answers=df_test.answer_text.values,
-        answer_starts=df_test.answer_start.values)
+        questions=df_test.question.values,)
 
     data_loader = torch.utils.data.DataLoader(
         test_dataset,
