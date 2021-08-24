@@ -17,17 +17,20 @@ import utils
 
 def run():
     df_test = pd.read_csv(config.TEST_FILE)
-    df_test.loc[:, 'label'] = 0
-    df_test.rename(columns={'excerpt': 'text'}, inplace=True)
+    df_test.loc[:, 'answer_start'] = 0
+    df_test.loc[:, 'answer_text'] = ''
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
         config.MODEL_CONFIG)
     model_config.output_hidden_states = True
 
-    test_dataset = dataset.CommonlitDataset(
-        texts=df_test.text.values,
-        labels=df_test.label.values)
+    test_dataset = dataset.ChaiiDataset(
+        ids=df_test.id.values,
+        contexts=df_test.context.values,
+        questions=df_test.question.values,
+        answers=df_test.answer_text.values,
+        answer_starts=df_test.answer_start.values)
 
     data_loader = torch.utils.data.DataLoader(
         test_dataset,

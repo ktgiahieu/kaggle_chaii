@@ -3,51 +3,119 @@ import torch
 
 import config
 
-def process_data(text, label,
-                 tokenizer, max_len):
-    """Preprocesses one data sample and returns a dict
-    with targets and other useful info.
-    """
-    encoded_dict = tokenizer.encode_plus(
-        text,                      # Sentence to encode.
-        add_special_tokens = True, # Add '[CLS]' and '[SEP]'
-        max_length = config.MAX_LEN,           # Pad & truncate all sentences.
-        padding = 'max_length',
-		return_attention_mask = True,   # Construct attn. masks.
-        return_tensors = 'pt',     # Return pytorch tensors.
-        truncation = True,
-    )
-    # ----------------------------------
 
-    # Input for BERT
-    input_ids = np.squeeze(encoded_dict['input_ids'],0)
-    # Mask of input without padding
-    mask = np.squeeze(encoded_dict['attention_mask'],0)
+def jaccard_array(a, b):
+    """Calculates Jaccard on arrays."""
+    a = set(a)
+    b = set(b)
+    c = a.intersection(b)
+    return float(len(c)) / (len(a) + len(b) - len(c))
 
-    return {'ids': input_ids,
-            'mask': mask,
-            'labels': [label]}
+def preprocess_data(ids, contexts, questions, answers, answer_starts):
+    features = []
+    for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
+        tokenized_example = tokenizer(
+            example["question"],
+            example["context"],
+            truncation="only_second",
+            max_length=config.MAX_LEN,
+            stride=config.DOC_STRIDE,
+            return_overflowing_tokens=True,
+            return_offsets_mapping=True,
+            padding="max_length",
+        )
+
+        offset_mapping = tokenized_example.pop("offset_mapping")
+
+        for i, offsets in enumerate(offset_mapping):
+            input_ids = tokenized_example["input_ids"][i]
+            attention_mask = tokenized_example["attention_mask"][i]
+
+            cls_index = input_ids.index(tokenizer.cls_token_id)
+            sequence_ids = tokenized_example.sequence_ids(i) #1 for answer, 0 for question, None for special tokens.
+
+            start_char = answer_start
+            end_char = answer_start + len(answer)
+
+            token_start_index = 0
+            while sequence_ids[token_start_index] != 1:
+                token_start_index += 1
+            token_answer_start_index = token_start_index
+
+            token_end_index = len(input_ids) - 1
+            while sequence_ids[token_end_index] != 1:
+                token_end_index -= 1
+            token_answer_end_index = token_end_index
+
+            if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
+                targets_start = cls_index
+                targets_end = cls_index
+
+                start_labels = [1] + [0]*(len(input_ids) - 1)
+                end_labels = [1] + [0]*(len(input_ids) - 1)
+            else:
+                while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
+                    token_start_index += 1
+                targets_start = token_start_index - 1
+                while offsets[token_end_index][1] >= end_char:
+                    token_end_index -= 1
+                targets_end = token_end_index + 1
+
+                # Soft Jaccard labels
+                # ----------------------------------
+                n = len(input_ids)
+                sentence_array = np.arange(n)
+                answer_array = sentence[targets_start:targets_end + 1]
+
+                start_labels = np.zeros(n)
+                for i in range(token_answer_start_index, targets_end + 1):
+                    jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
+                    start_labels[i] = jac + jac ** 2
+                start_labels = (1 - config.SOFT_ALPHA) * start_labels / start_labels.sum()
+                start_labels[targets_start] += config.SOFT_ALPHA
+
+                end_labels = np.zeros(n)
+                for i in range(targets_start, token_answer_end_index + 1):
+                    jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
+                    end_labels[i] = jac + jac ** 2
+                end_labels = (1 - config.SOFT_ALPHA) * end_labels / end_labels.sum()
+                end_labels[targets_end] += config.SOFT_ALPHA
+
+                start_labels = list(start_labels)
+                end_labels = list(end_labels)
+
+            feature = {'example_ids': id,
+                       'ids': input_ids,
+                       'mask': attention_mask,
+                       'offsets': offsets,
+                       'start_labels': start_labels,
+                       'end_labels': end_labels,
+                       'orig_answer': answer,}
+            features.append(feature)
+        
+    return features
 
 
-class CommonlitDataset:
-    def __init__(self, texts, labels):
-        self.texts = texts
-        self.labels = labels
-        self.max_len = config.MAX_LEN
+class ChaiiDataset:
+    def __init__(self, ids, contexts, questions, answers, answer_starts):
         self.tokenizer = config.TOKENIZER
+        self.features = preprocess_data(ids, contexts, questions, answers, answer_starts)
 
     def __len__(self):
-        return len(self.texts)
+        return len(self.features)
 
     def __getitem__(self, item):
         """Returns preprocessed data sample as dict with
         data converted to tensors.
         """
-        data = process_data(self.texts[item],
-                            self.labels[item],
-                            self.tokenizer,
-                            self.max_len)
+        data = self.features[item]
 
         return {'ids': torch.tensor(data['ids'], dtype=torch.long),
                 'mask': torch.tensor(data['mask'], dtype=torch.long),
-                'labels': torch.tensor(data['labels'], dtype=torch.float),}
+                'start_labels': torch.tensor(data['start_labels'],
+                                             dtype=torch.float),
+                'end_labels': torch.tensor(data['end_labels'],
+                                           dtype=torch.float),
+                'offsets': torch.tensor(data['offsets'], dtype=torch.long),
+                'example_ids': data['example_ids'],
+                'orig_answer': data['answer'],}

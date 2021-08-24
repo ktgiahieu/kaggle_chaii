@@ -17,14 +17,15 @@ import utils
 def run(fold, seed):
     dfx = pd.read_csv(config.TRAINING_FILE)
     
-    dfx.rename(columns={'excerpt': 'text', 'target': 'label'}, inplace=True)
-
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
-    train_dataset = dataset.CommonlitDataset(
-        texts=df_train.text.values,
-        labels=df_train.label.values)
+    train_dataset = dataset.ChaiiDataset(
+        ids=df_train.id.values,
+        contexts=df_train.context.values,
+        questions=df_train.question.values,
+        answers=df_train.answer_text.values,
+        answer_starts=df_train.answer_start.values)
 
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -32,9 +33,12 @@ def run(fold, seed):
         num_workers=4,
         shuffle=True)
 
-    valid_dataset = dataset.CommonlitDataset(
-        texts=df_valid.text.values,
-        labels=df_valid.label.values)
+    valid_dataset = dataset.ChaiiDataset(
+        ids=df_valid.id.values,
+        contexts=df_valid.context.values,
+        questions=df_valid.question.values,
+        answers=df_valid.answer_text.values,
+        answer_starts=df_valid.answer_start.values)
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
@@ -69,7 +73,7 @@ def run(fold, seed):
         swa_start=int(num_train_steps * config.SWA_RATIO),
         swa_freq=config.SWA_FREQ,
         swa_lr=None)
-    scheduler = transformers.get_cosine_schedule_with_warmup(
+    scheduler = transformers.get_linear_schedule_with_warmup(
         optimizer=optimizer,
         num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
         num_training_steps=num_train_steps)
@@ -79,13 +83,13 @@ def run(fold, seed):
 
     print(f'Training is starting for fold={fold}')
 
-    rmse_score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
+    score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
                     device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()
 
-    return rmse_score
+    return score
 
 
 if __name__ == '__main__':
@@ -99,8 +103,9 @@ if __name__ == '__main__':
             fold_scores.append(fold_score)
             writer.close()
 
-        print('\nScores without SWA:')
-        for i in range(config.N_FOLDS):
-            print(f'Fold={i}, RMSE = {fold_scores[i]}')
-        print(f'Mean = {np.mean(fold_scores)}')
-        print(f'Std = {np.std(fold_scores)}')
+        if len(fold_score)==config.N_FOLDS and fold_score[0] is not None:
+            print('\nScores without SWA:')
+            for i in range(config.N_FOLDS):
+                print(f'Fold={i}, Score = {fold_scores[i]}')
+            print(f'Mean = {np.mean(fold_scores)}')
+            print(f'Std = {np.std(fold_scores)}')
