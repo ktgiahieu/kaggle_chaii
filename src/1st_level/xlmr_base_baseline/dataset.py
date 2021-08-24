@@ -65,7 +65,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                 # ----------------------------------
                 n = len(input_ids)
                 sentence_array = np.arange(n)
-                answer_array = sentence[targets_start:targets_end + 1]
+                answer_array = sentence_array[targets_start:targets_end + 1]
 
                 start_labels = np.zeros(n)
                 for i in range(token_answer_start_index, targets_end + 1):
