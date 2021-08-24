@@ -118,4 +118,4 @@ class ChaiiDataset:
                                            dtype=torch.float),
                 'offsets': torch.tensor(data['offsets'], dtype=torch.long),
                 'example_ids': data['example_ids'],
-                'orig_answer': data['answer'],}
+                'orig_answer': data['orig_answer'],}
