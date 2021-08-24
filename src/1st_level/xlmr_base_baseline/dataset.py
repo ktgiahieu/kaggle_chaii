@@ -38,6 +38,8 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                 feature = {'example_ids': id,
                        'ids': input_ids,
                        'mask': attention_mask,
+                       'start_labels': 0,
+                       'end_labels': 0,
                        'offsets': offsets,
                        'sequence_ids': sequence_ids}
                 features.append(feature)
