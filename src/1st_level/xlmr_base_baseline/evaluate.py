@@ -103,10 +103,10 @@ def run(fold):
     predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
     df_valid['PredictionString'] = df_valid['id'].map(predictions)
-    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text'])).mean()
+    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
     print(f'Loss = {losses.avg}')
-    return eval_score
+    return losses.avg
 
 
 if __name__ == '__main__':
