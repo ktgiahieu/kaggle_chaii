@@ -73,7 +73,8 @@ def run():
                 end_labels = start_labels.to(device, dtype=torch.float)
 
 
-                outputs_seeds_start, outputs_seeds_end = []
+                outputs_seeds_start = []
+                outputs_seeds_end = []
                 for s in range(len(config.SEEDS)):
                     outputs_start, outputs_end = all_models[s](ids=ids, mask=mask)
 
