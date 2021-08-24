@@ -11,7 +11,7 @@ def jaccard_array(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-def preprocess_data(ids, contexts, questions, answers, answer_starts):
+def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts):
     features = []
     for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
         tokenized_example = tokenizer(
@@ -99,7 +99,7 @@ def preprocess_data(ids, contexts, questions, answers, answer_starts):
 class ChaiiDataset:
     def __init__(self, ids, contexts, questions, answers, answer_starts):
         self.tokenizer = config.TOKENIZER
-        self.features = preprocess_data(ids, contexts, questions, answers, answer_starts)
+        self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts)
 
     def __len__(self):
         return len(self.features)
