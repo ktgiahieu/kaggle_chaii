@@ -34,7 +34,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
             cls_index = input_ids.index(tokenizer.cls_token_id)
             sequence_ids = tokenized_example.sequence_ids(i) #1 for answer, 0 for question, None for special tokens.
 
-            if answers is None:
+            if answer == '':
                 feature = {'example_ids': id,
                        'ids': input_ids,
                        'mask': attention_mask,
@@ -107,7 +107,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
 
 
 class ChaiiDataset:
-    def __init__(self, ids, contexts, questions, answers=None, answer_starts=None):
+    def __init__(self, ids, contexts, questions, answers, answer_starts):
         self.tokenizer = config.TOKENIZER
         self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts)
 

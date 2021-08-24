@@ -42,11 +42,11 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
             sequence_ids = features[feature_index]["sequence_ids"]
             context_index = 1
 
-            features[feature_index]["offset_mapping"] = [
+            features[feature_index]["offsets"] = [
                 (o if sequence_ids[k] == context_index else None)
-                for k, o in enumerate(features[feature_index]["offset_mapping"])
+                for k, o in enumerate(features[feature_index]["offsets"])
             ]
-            offset_mapping = features[feature_index]["offset_mapping"]
+            offsets = features[feature_index]["offsets"]
             cls_index = features[feature_index]["input_ids"].index(tokenizer.cls_token_id)
             feature_null_score = start_logits[cls_index] + end_logits[cls_index]
             if min_null_score is None or min_null_score < feature_null_score:
@@ -57,18 +57,18 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
             for start_index in start_indexes:
                 for end_index in end_indexes:
                     if (
-                        start_index >= len(offset_mapping)
-                        or end_index >= len(offset_mapping)
-                        or offset_mapping[start_index] is None
-                        or offset_mapping[end_index] is None
+                        start_index >= len(offsets)
+                        or end_index >= len(offsets)
+                        or offsets[start_index] is None
+                        or offsets[end_index] is None
                     ):
                         continue
                     # Don't consider answers with a length that is either < 0 or > max_answer_length.
                     if end_index < start_index or end_index - start_index + 1 > max_answer_length:
                         continue
 
-                    start_char = offset_mapping[start_index][0]
-                    end_char = offset_mapping[end_index][1]
+                    start_char = offsets[start_index][0]
+                    end_char = offsets[end_index][1]
                     valid_answers.append(
                         {
                             "score": start_logits[start_index] + end_logits[end_index],
