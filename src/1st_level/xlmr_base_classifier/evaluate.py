@@ -83,8 +83,10 @@ def run(fold):
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs = (m(outputs) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
-            tn, fp, fn, tp = confusion_matrix(classifier_labels.cpu().detach().numpy(), outputs).ravel()
+            outputs = (m(outputs.squeeze(-1)) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
+            tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
+                                              outputs, labels=[0, 1]).ravel()
+
             TP += tp
             TN += tn
             FP += fp
@@ -117,7 +119,7 @@ if __name__ == '__main__':
     print(f'Mean = {np.mean(fold_scores)}')
     print(f'Std = {np.std(fold_scores)}')
 
-    tn, fp, fn, tp = confusion_matrix(true_labels, predicted_labels).ravel()
+    tn, fp, fn, tp = confusion_matrix(true_labels, predicted_labels, labels=[0, 1]).ravel()
     oof_accuracy = (tp+tn)/(fp+fn)
     print(f'OOF accuracy = {oof_accuracy}')
     oof_recall = tp/(tp+fn)
