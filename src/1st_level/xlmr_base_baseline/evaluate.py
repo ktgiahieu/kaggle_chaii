@@ -27,7 +27,7 @@ def run(fold):
 
     seed_models = []
     for seed in config.SEEDS:
-        model = models.CommonlitModel(conf=model_config)
+        model = models.ChaiiModel(conf=model_config)
         model.to(device)
         model.load_state_dict(torch.load(
             f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),

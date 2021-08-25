@@ -1,4 +1,5 @@
 from shutil import copyfile
+from sklearn.metrics import confusion_matrix
 
 import numpy as np
 import torch
@@ -18,10 +19,16 @@ def loss_fn(start_logits, end_logits,
     total_loss = (start_loss + end_loss)
     return total_loss
 
+def classifier_loss_fn(logits, labels):
+    m = torch.nn.Sigmoid()
+    loss_fct = torch.nn.BCELoss()
+    loss = loss_fct(m(logits), labels)
+    return loss
+
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None):  
     model_path_filename = model_path.split('/')[-1]
-    best_val_jac_score = None
+    best_val_score = None
     step = 0
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
@@ -35,20 +42,17 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
             ids = d['ids']
             mask = d['mask']
-            start_labels = d['start_labels']
-            end_labels = d['end_labels']
+            classifier_labels = d['classifier_labels']
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.long)
 
             model.train()
             
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
+            loss = classifier_loss_fn(outputs, classifier_labels)
 
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
@@ -62,80 +66,77 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 model.zero_grad()                           # Reset gradients tensors
                 if config.SAVE_CHECKPOINT_TYPE == 'best_iter':
                     if step >= last_eval_step + eval_period or epoch*len(train_data_loader) + bi +1 == config.EPOCHS*len(train_data_loader):
-                        val_jac_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer)                           
+                        val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer)                           
                         last_eval_step = step
-                        for jac_score, period in config.EVAL_SCHEDULE:
-                            if val_jac_score <= jac_score:
+                        for score, period in config.EVAL_SCHEDULE:
+                            if val_score <= score:
                                 eval_period = period
                                 break                               
                 
-                        if not best_val_jac_score or val_jac_score > best_val_jac_score:                    
-                            best_val_jac_score = val_jac_score
+                        if not best_val_score or val_score > best_val_score:                    
+                            best_val_score = val_score
                             best_epoch = epoch
                             torch.save(model.state_dict(), f'/content/{model_path_filename}')
-                            print(f"New best_val_jac_score: {best_val_jac_score:0.4}")
+                            print(f"New best_val_score: {best_val_score:0.4}")
                         else:       
-                            print(f"Still best_val_jac_score: {best_val_jac_score:0.4}",
+                            print(f"Still best_val_score: {best_val_score:0.4}",
                                     f"(from epoch {best_epoch})")                                    
             step += 1
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
-            val_jac_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
-            if not best_val_jac_score or val_jac_score > best_val_jac_score:                    
-                best_val_jac_score = val_jac_score
+            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
+            if not best_val_score or val_score > best_val_score:                    
+                best_val_score = val_score
                 best_epoch = epoch
                 torch.save(model.state_dict(), f'/content/{model_path_filename}')
-                print(f"New best_val_jac_score: {best_val_jac_score:0.4}")
+                print(f"New best_val_score: {best_val_score:0.4}")
             else:       
-                print(f"Still best_val_jac_score: {best_val_jac_score:0.4}",
+                print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
             torch.save(model.state_dict(), f'/content/{model_path_filename}')
         copyfile(f'/content/{model_path_filename}', model_path)
         print("Copied best checkpoint to google drive.")
-    return best_val_jac_score
+    return best_val_score
 
 # IN PROGRESS
 def eval_fn(data_loader, model, device, iteration, writer):
     model.eval()
     losses = utils.AverageMeter()
+    TP = 0
+    TN = 0
+    FP = 0
+    FN = 0
+    m = torch.nn.Sigmoid()
 
     with torch.no_grad():
         for bi, d in enumerate(data_loader):
             ids = d['ids']
             mask = d['mask']
-            start_labels = d['start_labels']
-            end_labels = d['end_labels']
+            classifier_labels = d['classifier_labels']
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.long)
 
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
-            outputs_start = outputs_start.cpu().detach().numpy()
-            outputs_end = outputs_end.cpu().detach().numpy()
+            loss = classifier_loss_fn(outputs, classifier_labels)
 
-            jaccard_scores = []
-            for px, tweet in enumerate(orig_tweet):
-                selected_tweet = orig_selected[px]
-                jaccard_score, _ = \
-                    utils.calculate_jaccard(original_tweet=tweet,
-                                            target_string=selected_tweet,
-                                            start_logits=outputs_start[px, :],
-                                            end_logits=outputs_end[px, :],
-                                            orig_start=orig_start[px],
-                                            orig_end=orig_end[px],
-                                            offsets=offsets[px])
-                jaccard_scores.append(jaccard_score)
+            outputs = (m(outputs) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
+            tn, fp, fn, tp = confusion_matrix(classifier_labels.cpu().detach().numpy(), outputs).ravel()
+            TP += tp
+            TN += tn
+            FP += fp
+            FN += fn
 
-            jaccards.update(np.mean(jaccard_scores), ids.size(0))
             losses.update(loss.item(), ids.size(0))
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
-    return losses.avg
+    accuracy = (TP+TN)/(FP+FN)
+    print(f'Val accuracy {iteration}= {accuracy}')
+    recall = TP/(TP+FN)
+    print(f'Val recall {iteration}= {recall}')
+    return recall

@@ -62,39 +62,39 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 model.zero_grad()                           # Reset gradients tensors
                 if config.SAVE_CHECKPOINT_TYPE == 'best_iter':
                     if step >= last_eval_step + eval_period or epoch*len(train_data_loader) + bi +1 == config.EPOCHS*len(train_data_loader):
-                        val_jac_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer)                           
+                        val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer)                           
                         last_eval_step = step
-                        for jac_score, period in config.EVAL_SCHEDULE:
-                            if val_jac_score <= jac_score:
+                        for score, period in config.EVAL_SCHEDULE:
+                            if val_score <= score:
                                 eval_period = period
                                 break                               
                 
-                        if not best_val_jac_score or val_jac_score > best_val_jac_score:                    
-                            best_val_jac_score = val_jac_score
+                        if not best_val_score or val_score > best_val_score:                    
+                            best_val_score = val_score
                             best_epoch = epoch
                             torch.save(model.state_dict(), f'/content/{model_path_filename}')
-                            print(f"New best_val_jac_score: {best_val_jac_score:0.4}")
+                            print(f"New best_val_score: {best_val_score:0.4}")
                         else:       
-                            print(f"Still best_val_jac_score: {best_val_jac_score:0.4}",
+                            print(f"Still best_val_score: {best_val_score:0.4}",
                                     f"(from epoch {best_epoch})")                                    
             step += 1
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
-            val_jac_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
-            if not best_val_jac_score or val_jac_score > best_val_jac_score:                    
-                best_val_jac_score = val_jac_score
+            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
+            if not best_val_score or val_score > best_val_score:                    
+                best_val_score = val_score
                 best_epoch = epoch
                 torch.save(model.state_dict(), f'/content/{model_path_filename}')
-                print(f"New best_val_jac_score: {best_val_jac_score:0.4}")
+                print(f"New best_val_score: {best_val_score:0.4}")
             else:       
-                print(f"Still best_val_jac_score: {best_val_jac_score:0.4}",
+                print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
             torch.save(model.state_dict(), f'/content/{model_path_filename}')
         copyfile(f'/content/{model_path_filename}', model_path)
         print("Copied best checkpoint to google drive.")
-    return best_val_jac_score
+    return best_val_score
 
 # IN PROGRESS
 def eval_fn(data_loader, model, device, iteration, writer):

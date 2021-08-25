@@ -3,7 +3,7 @@ import transformers
 
 import config
 
-class CommonlitModel(transformers.BertPreTrainedModel):
+class ChaiiModel(transformers.BertPreTrainedModel):
     def __init__(self, conf):
         super(CommonlitModel, self).__init__(conf)
         self.automodel = transformers.AutoModel.from_pretrained(

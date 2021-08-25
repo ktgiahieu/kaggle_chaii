@@ -51,9 +51,10 @@ TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_CONFIG)
 
 HIDDEN_SIZE = 768
-N_LAST_HIDDEN = 4
+N_LAST_HIDDEN = 6
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5
+CLASSIFIER_DROPOUT = 0.1
 SOFT_ALPHA = 1.0
 WARMUP_RATIO = 0.1
 
@@ -61,19 +62,14 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (0.6, 200*ACCUMULATION_STEPS),
-                (0.50, 96*ACCUMULATION_STEPS), 
-                (0.49, 48*ACCUMULATION_STEPS), 
-                (0.48, 32*ACCUMULATION_STEPS), 
-                (0.47, 24*ACCUMULATION_STEPS), 
-                (-1., 12*ACCUMULATION_STEPS)
+                (10., 200*ACCUMULATION_STEPS),
                 ]
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 1.5e-5
+HEAD_LEARNING_RATE = 1e-3
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
 LEARNING_RATES_RANGE = [1.5e-5, 1.5e-5]
 WEIGHT_DECAY = 0.01

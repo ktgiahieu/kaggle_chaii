@@ -40,8 +40,9 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                 feature = {'example_ids': id,
                        'ids': input_ids,
                        'mask': attention_mask,
-                       'start_labels': 0,
-                       'end_labels': 0,
+                       'start_labels': [0],
+                       'end_labels': [0],
+                       'classifier_labels':[0],
                        'offsets': offsets,
                        'sequence_ids': sequence_ids}
                 features.append(feature)
@@ -66,6 +67,8 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
 
                 start_labels = [1] + [0]*(len(input_ids) - 1)
                 end_labels = [1] + [0]*(len(input_ids) - 1)
+
+                classifier_labels = 0
             else:
                 while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
                     token_start_index += 1
@@ -97,12 +100,15 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                 start_labels = list(start_labels)
                 end_labels = list(end_labels)
 
+                classifier_labels = 1
+
             feature = {'example_ids': id,
                        'ids': input_ids,
                        'mask': attention_mask,
                        'offsets': offsets,
                        'start_labels': start_labels,
                        'end_labels': end_labels,
+                       'classifier_labels':[classifier_labels],
                        'orig_answer': answer,
                        'sequence_ids': sequence_ids,}
             features.append(feature)
@@ -129,4 +135,6 @@ class ChaiiDataset:
                 'start_labels': torch.tensor(data['start_labels'],
                                              dtype=torch.float),
                 'end_labels': torch.tensor(data['end_labels'],
-                                           dtype=torch.float),}
+                                           dtype=torch.float),
+                'classifier_labels':torch.tensor(data['classifier_labels'],
+                                           dtype=torch.long),}

@@ -53,7 +53,7 @@ def run(fold, seed):
     ##
     model_config.hidden_dropout_prob = config.BERT_DROPOUT
     ##
-    model = models.CommonlitModel(conf=model_config)
+    model = models.ChaiiModel(conf=model_config)
     model = model.to(device)
 
     num_train_steps = int(
