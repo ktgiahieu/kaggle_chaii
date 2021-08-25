@@ -127,6 +127,7 @@ def eval_fn(data_loader, model, device, iteration, writer):
             outputs = (m(outputs.squeeze(-1)) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
             print(outputs)
             print(classifier_labels.squeeze(-1).cpu().detach().numpy())
+            print(confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), outputs).ravel())
             tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), outputs).ravel()
             TP += tp
             TN += tn
