@@ -38,9 +38,9 @@ def run():
         batch_size=config.VALID_BATCH_SIZE,
         num_workers=1)
     
-    predicted_labels_start = []
-    predicted_labels_end = []
+    predicted_labels = []
     all_models = []
+    m = torch.nn.Sigmoid()
     for seed in config.SEEDS:
         model = models.ChaiiClassifierModel(conf=model_config)
         model.to(device)
@@ -57,69 +57,37 @@ def run():
                 model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
             all_models[s].load_state_dict(torch.load(model_path, map_location="cuda"))
 
-        predicted_labels_per_fold_start = []
-        predicted_labels_per_fold_end = []
+        predicted_labels_per_fold = []
         with torch.no_grad():
             tk0 = tqdm.tqdm(data_loader, total=len(data_loader))
             for bi, d in enumerate(tk0):
                 ids = d['ids']
                 mask = d['mask']
-                start_labels = d['start_labels']
-                end_labels = d['end_labels']
+                classifier_labels = d['classifier_labels']
 
                 ids = ids.to(device, dtype=torch.long)
                 mask = mask.to(device, dtype=torch.long)
-                start_labels = start_labels.to(device, dtype=torch.float)
-                end_labels = start_labels.to(device, dtype=torch.float)
+                classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
 
-                outputs_seeds_start = []
-                outputs_seeds_end = []
+                outputs_seeds = []
                 for s in range(len(config.SEEDS)):
-                    outputs_start, outputs_end = all_models[s](ids=ids, mask=mask)
+                    outputs = all_models[s](ids=ids, mask=mask)
+                    outputs_seeds.append(outputs)
 
-                    outputs_seeds_start.append(outputs_start)
-                    outputs_seeds_end.append(outputs_end)
+                outputs = sum(outputs_seeds) / (len(config.SEEDS))
 
-                outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
-                outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
+                outputs = outputs.cpu().detach().numpy()
+                predicted_labels_per_fold.extend(outputs.squeeze(-1).tolist())
+        predicted_labels.append(predicted_labels_per_fold)
+    predicted_labels = (m(torch.mean(
+        torch.tensor(predicted_labels, dtype=torch.float), 
+        dim=0)) > config.CLASSIFIER_THRESHOLD).tolist()
 
-                outputs_start = outputs_start.cpu().detach()
-                outputs_end = outputs_end.cpu().detach()
+    df_test['predicted_labels'] = predicted_labels
+    filter_df = df_test[df_test['predicted_labels']==1]
 
-                predicted_labels_per_fold_start.append(outputs_start)
-                predicted_labels_per_fold_end.append(outputs_end)
-        
-        predicted_labels_per_fold_start = torch.cat(
-            tuple(x for x in predicted_labels_per_fold_start), dim=0)
-        predicted_labels_per_fold_end = torch.cat(
-            tuple(x for x in predicted_labels_per_fold_end), dim=0)
-
-        predicted_labels_start.append(predicted_labels_per_fold_start)
-        predicted_labels_end.append(predicted_labels_per_fold_end)
-    
-    # Raw predictions
-    predicted_labels_start = torch.stack(
-        tuple(x for x in predicted_labels_start), dim=0)
-    predicted_labels_start = torch.mean(predicted_labels_start, dim=0)
-    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
-
-    predicted_labels_end = torch.stack(
-        tuple(x for x in predicted_labels_end), dim=0)
-    predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
-    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
-
-    #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
-    predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
-                                                   (predicted_labels_start, predicted_labels_end))
-
-    if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
-        os.makedirs(f'{config.INFERED_PICKLE_PATH}')
-        
-    pickle_name = sys.argv[1]
-    with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predictions, handle)
+    filter_df.to_csv('train_filtered.csv', index=False)
 
     del test_dataset
     del data_loader
