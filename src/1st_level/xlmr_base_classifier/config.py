@@ -37,7 +37,7 @@ else: #colab
 # Model params
 SEEDS = [1000, 42, 456]
 N_FOLDS = 5
-EPOCHS = 1
+EPOCHS = 3
 CLASSIFIER_THRESHOLD = 0.5
 
 PATIENCE = None
@@ -65,7 +65,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 1*ACCUMULATION_STEPS),
+                (300., 1*ACCUMULATION_STEPS),
                 ]
 
 
