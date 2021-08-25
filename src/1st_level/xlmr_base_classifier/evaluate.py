@@ -96,7 +96,7 @@ def run(fold):
             predicted_labels.extend(outputs.squeeze(-1).tolist())
     
     print(f'Loss = {losses.avg}')
-    accuracy = (TP+TN)/(FP+FN)
+    accuracy = (TP+TN)/(TP+TN+FP+FN)
     print(f'Val accuracy {iteration}= {accuracy}')
     recall = TP/(TP+FN)
     print(f'Val recall {iteration}= {recall}')
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     print(f'Std = {np.std(fold_scores)}')
 
     tn, fp, fn, tp = confusion_matrix(true_labels, predicted_labels, labels=[0, 1]).ravel()
-    oof_accuracy = (tp+tn)/(fp+fn)
+    oof_accuracy = (tp+tn)/(tp+tn+fp+fn)
     print(f'OOF accuracy = {oof_accuracy}')
     oof_recall = tp/(tp+fn)
     print(f'OOF recall = {oof_recall}')

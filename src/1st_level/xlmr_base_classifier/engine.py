@@ -136,7 +136,7 @@ def eval_fn(data_loader, model, device, iteration, writer):
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
-    accuracy = (TP+TN)/(FP+FN)
+    accuracy = (TP+TN)/(TP+TN+FP+FN)
     print(f'Val accuracy {iteration}= {accuracy}')
     recall = TP/(TP+FN)
     print(f'Val recall {iteration}= {recall}')
