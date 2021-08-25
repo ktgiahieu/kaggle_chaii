@@ -5,7 +5,7 @@ import config
 
 class ChaiiClassifierModel(transformers.BertPreTrainedModel):
     def __init__(self, conf):
-        super(CommonlitModel, self).__init__(conf)
+        super(ChaiiClassifierModel, self).__init__(conf)
         self.automodel = transformers.AutoModel.from_pretrained(
             config.MODEL_CONFIG,
             config=conf)
