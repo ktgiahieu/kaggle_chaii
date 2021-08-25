@@ -61,14 +61,9 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (0.6, 200*ACCUMULATION_STEPS),
-                (0.50, 96*ACCUMULATION_STEPS), 
-                (0.49, 48*ACCUMULATION_STEPS), 
-                (0.48, 32*ACCUMULATION_STEPS), 
-                (0.47, 24*ACCUMULATION_STEPS), 
-                (-1., 12*ACCUMULATION_STEPS)
+                (10., 300*ACCUMULATION_STEPS),
                 ]
 
 

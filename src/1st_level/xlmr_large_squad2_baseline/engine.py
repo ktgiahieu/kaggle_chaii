@@ -19,7 +19,7 @@ def loss_fn(start_logits, end_logits,
     return total_loss
 
 
-def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None):  
+def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
     best_val_jac_score = None
     step = 0
@@ -62,7 +62,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 model.zero_grad()                           # Reset gradients tensors
                 if config.SAVE_CHECKPOINT_TYPE == 'best_iter':
                     if step >= last_eval_step + eval_period or epoch*len(train_data_loader) + bi +1 == config.EPOCHS*len(train_data_loader):
-                        val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer)                           
+                        val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer, df_valid, valid_dataset)                           
                         last_eval_step = step
                         for score, period in config.EVAL_SCHEDULE:
                             if val_score <= score:
@@ -81,7 +81,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
-            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer)
+            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
                 best_epoch = epoch
@@ -97,10 +97,11 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
     return best_val_score
 
 # IN PROGRESS
-def eval_fn(data_loader, model, device, iteration, writer):
+def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_dataset=None):
     model.eval()
     losses = utils.AverageMeter()
-
+    predicted_labels_start = []
+    predicted_labels_end = []
     with torch.no_grad():
         for bi, d in enumerate(data_loader):
             ids = d['ids']
@@ -117,25 +118,33 @@ def eval_fn(data_loader, model, device, iteration, writer):
         
             loss = loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
-            outputs_start = outputs_start.cpu().detach().numpy()
-            outputs_end = outputs_end.cpu().detach().numpy()
+            outputs_start = outputs_start.cpu().detach()
+            outputs_end = outputs_end.cpu().detach()
 
-            jaccard_scores = []
-            for px, tweet in enumerate(orig_tweet):
-                selected_tweet = orig_selected[px]
-                jaccard_score, _ = \
-                    utils.calculate_jaccard(original_tweet=tweet,
-                                            target_string=selected_tweet,
-                                            start_logits=outputs_start[px, :],
-                                            end_logits=outputs_end[px, :],
-                                            orig_start=orig_start[px],
-                                            orig_end=orig_end[px],
-                                            offsets=offsets[px])
-                jaccard_scores.append(jaccard_score)
-
-            jaccards.update(np.mean(jaccard_scores), ids.size(0))
             losses.update(loss.item(), ids.size(0))
+
+            predicted_labels_start.append(outputs_start)
+            predicted_labels_end.append(outputs_end)
+    
+    # Raw predictions
+    predicted_labels_start = torch.cat(
+        tuple(x for x in predicted_labels_start), dim=0)
+    predicted_labels_end = torch.cat(
+        tuple(x for x in predicted_labels_end), dim=0)
+
+    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
+    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
+    
+    #Post process 
+    #(predictions = {'id': 'predicted_text', ...} )
+    predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_start, predicted_labels_end))
+    df_valid['PredictionString'] = df_valid['id'].map(predictions)
+    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
+
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
-    return losses.avg
+
+    print(f'Val Jaccard score iter {iteration}= {eval_score}')
+    return eval_score
