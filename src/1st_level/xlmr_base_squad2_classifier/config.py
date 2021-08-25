@@ -37,7 +37,7 @@ else: #colab
 # Model params
 SEEDS = [1000, 42, 456]
 N_FOLDS = 5
-EPOCHS = 3
+EPOCHS = 1
 CLASSIFIER_THRESHOLD = 0.5
 
 PATIENCE = None
