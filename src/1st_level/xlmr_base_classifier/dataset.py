@@ -137,4 +137,4 @@ class ChaiiDataset:
                 'end_labels': torch.tensor(data['end_labels'],
                                            dtype=torch.float),
                 'classifier_labels':torch.tensor(data['classifier_labels'],
-                                           dtype=torch.long),}
+                                           dtype=torch.float),}

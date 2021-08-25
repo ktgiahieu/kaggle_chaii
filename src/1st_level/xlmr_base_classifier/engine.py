@@ -46,7 +46,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            classifier_labels = classifier_labels.to(device, dtype=torch.long)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             model.train()
             
@@ -118,7 +118,7 @@ def eval_fn(data_loader, model, device, iteration, writer):
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            classifier_labels = classifier_labels.to(device, dtype=torch.long)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             outputs = model(ids=ids, mask=mask)
         
