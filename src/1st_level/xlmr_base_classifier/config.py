@@ -7,10 +7,10 @@ import os
 is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 
 # Paths
-model_type = 'xlm-roberta-large'
+model_type = 'xlm-roberta-base'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-large-squad2-baseline'
+my_model_dataset = 'chaii-xlmr-base-baseline'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -19,11 +19,11 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/deepset-xlm-roberta-large-squad2'
+    MODEL_CONFIG = '../input/xlm-roberta-base'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_large_squad2_baseline'
+    model_save = 'xlmr_base_baseline'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -32,7 +32,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
+    MODEL_CONFIG = 'xlm-roberta-base'
 
 # Model params
 SEEDS = [1000, 42, 456]
@@ -41,8 +41,8 @@ EPOCHS = 1
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
-TRAIN_BATCH_SIZE = 4
-VALID_BATCH_SIZE = 4
+TRAIN_BATCH_SIZE = 16
+VALID_BATCH_SIZE = 16
 ACCUMULATION_STEPS = 1
 MAX_LEN = 384
 DOC_STRIDE = 128
@@ -50,7 +50,7 @@ DOC_STRIDE = 128
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_CONFIG)
 
-HIDDEN_SIZE = 1024
+HIDDEN_SIZE = 768
 N_LAST_HIDDEN = 4
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5
