@@ -42,7 +42,7 @@ def run():
     predicted_labels_end = []
     all_models = []
     for seed in config.SEEDS:
-        model = models.CommonlitModel(conf=model_config)
+        model = models.ChaiiClassifierModel(conf=model_config)
         model.to(device)
         model.eval()
         all_models.append(model)
