@@ -124,10 +124,10 @@ def eval_fn(data_loader, model, device, iteration, writer):
         
             loss = classifier_loss_fn(outputs, classifier_labels)
 
-            outputs = (m(outputs) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
+            outputs = (m(outputs.squeeze(-1)) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
             print(outputs)
-            print(classifier_labels.cpu().detach().numpy())
-            tn, fp, fn, tp = confusion_matrix(classifier_labels.cpu().detach().numpy(), outputs).ravel()
+            print(classifier_labels.squeeze(-1).cpu().detach().numpy())
+            tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), outputs).ravel()
             TP += tp
             TN += tn
             FP += fp
