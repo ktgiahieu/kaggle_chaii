@@ -4,7 +4,7 @@ import torch
 import config
 
 import os
-os.environ['TOKENIZERS_PARALLELISM'] = True
+os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
 def jaccard_array(a, b):
     """Calculates Jaccard on arrays."""
