@@ -27,5 +27,5 @@ class ChaiiClassifierModel(transformers.BertPreTrainedModel):
             tuple(out[-i - 1][:,0,:] for i in range(config.N_LAST_HIDDEN)), dim=-1)
         out = out.squeeze(1)
 
-        logits = self.classifier(pooled_last_hidden_states)
+        logits = self.classifier(out)
         return logits
