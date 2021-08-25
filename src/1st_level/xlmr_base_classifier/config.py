@@ -65,7 +65,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 200*ACCUMULATION_STEPS),
+                (10., 1*ACCUMULATION_STEPS),
                 ]
 
 

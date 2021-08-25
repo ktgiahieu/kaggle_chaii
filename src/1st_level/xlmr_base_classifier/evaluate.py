@@ -7,17 +7,19 @@ import numpy as np
 import pandas as pd
 import transformers
 import tqdm.autonotebook as tqdm
+from sklearn.metrics import confusion_matrix
+
 
 import utils
 import config
 import models
 import dataset
 import engine
+true_labels = []
 predicted_labels = []
 
 def run(fold):
     dfx = pd.read_csv(config.TRAINING_FILE)
-    dfx.rename(columns={'excerpt': 'text', 'target': 'label'}, inplace=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     device = torch.device('cuda')
@@ -27,7 +29,7 @@ def run(fold):
 
     seed_models = []
     for seed in config.SEEDS:
-        model = models.CommonlitModel(conf=model_config)
+        model = models.ChaiiClassifierModel(conf=model_config)
         model.to(device)
         model.load_state_dict(torch.load(
             f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),
@@ -50,64 +52,54 @@ def run(fold):
 
     
     losses = utils.AverageMeter()
-    predicted_labels_per_fold_start = []
-    predicted_labels_per_fold_end = []
+    predicted_labels_per_fold = []
+    TP = 0
+    TN = 0
+    FP = 0
+    FN = 0
+    m = torch.nn.Sigmoid()
     with torch.no_grad():
       
         tk0 = tqdm.tqdm(valid_data_loader, total=len(valid_data_loader))
         for bi, d in enumerate(tk0):
             ids = d['ids']
             mask = d['mask']
-            start_labels = d['start_labels']
-            end_labels = d['end_labels']
+            classifier_labels = d['classifier_labels']
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
-            outputs_seeds_start = []
-            outputs_seeds_end = []
+            outputs_seeds = []
             for i in range(len(config.SEEDS)):
-                outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
+                outputs = seed_models[i](ids=ids, mask=mask)
 
-                outputs_seeds_start.append(outputs_start)
-                outputs_seeds_end.append(outputs_end)
+                outputs_seeds.append(outputs)
 
-            outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
-            outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
+            outputs = sum(outputs_seeds) / (len(config.SEEDS))
             
-            loss = engine.loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
+            loss = engine.classifier_loss_fn(outputs, classifier_labels)
+
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs_start = outputs_start.cpu().detach()
-            outputs_end = outputs_end.cpu().detach()
+            outputs = (m(outputs) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
+            tn, fp, fn, tp = confusion_matrix(classifier_labels.cpu().detach().numpy(), outputs).ravel()
+            TP += tp
+            TN += tn
+            FP += fp
+            FN += fn
 
-            predicted_labels_per_fold_start.append(outputs_start)
-            predicted_labels_per_fold_end.append(outputs_end)
+            true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
+            predicted_labels.extend(outputs.squeeze(-1).tolist())
     
-    # Raw predictions
-    predicted_labels_per_fold_start = torch.cat(
-        tuple(x for x in predicted_labels_per_fold_start), dim=0)
-    predicted_labels_per_fold_end = torch.cat(
-        tuple(x for x in predicted_labels_per_fold_end), dim=0)
-
-    predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
-    predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
-    
-    
-    #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
-    predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
-                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
-    df_valid['PredictionString'] = df_valid['id'].map(predictions)
-    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
-
     print(f'Loss = {losses.avg}')
-    print(f'Jaccard = {eval_score}')
-    return eval_score
+    accuracy = (TP+TN)/(FP+FN)
+    print(f'Val accuracy {iteration}= {accuracy}')
+    recall = TP/(TP+FN)
+    print(f'Val recall {iteration}= {recall}')
+
+    return recall
 
 
 if __name__ == '__main__':
@@ -121,9 +113,15 @@ if __name__ == '__main__':
         gc.collect()
 
     for i in range(config.N_FOLDS):
-        print(f'Fold={i}, Jaccard score = {fold_scores[i]}')
+        print(f'Fold={i}, Recall = {fold_scores[i]}')
     print(f'Mean = {np.mean(fold_scores)}')
     print(f'Std = {np.std(fold_scores)}')
+
+    tn, fp, fn, tp = confusion_matrix(true_labels, predicted_labels).ravel()
+    oof_accuracy = (tp+tn)/(fp+fn)
+    print(f'OOF accuracy = {oof_accuracy}')
+    oof_recall = tp/(tp+fn)
+    print(f'OOF recall = {oof_recall}')
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
