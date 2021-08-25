@@ -106,7 +106,7 @@ def run(fold):
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
     print(f'Loss = {losses.avg}')
-    return losses.avg
+    return eval_score
 
 
 if __name__ == '__main__':
