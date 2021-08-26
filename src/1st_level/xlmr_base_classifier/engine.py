@@ -40,6 +40,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         for bi, d in enumerate(tk0):
             torch.cuda.empty_cache()
             gc.collect()
+            print(d['sampling_rate'])
             if random.random() > d['sampling_rate']:
                 continue
 
