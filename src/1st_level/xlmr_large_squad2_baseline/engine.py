@@ -21,7 +21,7 @@ def loss_fn(start_logits, end_logits,
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
-    best_val_jac_score = None
+    best_val_score = None
     step = 0
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
