@@ -10,7 +10,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 model_type = 'xlm-roberta-base'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-base-classifier'
+my_model_dataset = 'chaii-xlmr-base-squad2-classifier'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -23,7 +23,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_base_classifier'
+    model_save = 'xlmr_base_squad2_classifier'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
