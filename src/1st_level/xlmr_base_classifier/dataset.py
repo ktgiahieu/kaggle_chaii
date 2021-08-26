@@ -17,7 +17,7 @@ def uniform_negative_sampling(features, num_positive):
         else:
             feature['sampling_rate'] = 1.0
         features[i] = feature
-
+    print(features[0])
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
     return features
@@ -129,6 +129,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                        'sequence_ids': sequence_ids,}
             features.append(feature)
     features = uniform_negative_sampling(features, len(ids))
+    print(features[0])
     return features
 
 
