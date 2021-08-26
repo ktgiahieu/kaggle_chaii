@@ -101,42 +101,47 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
 # IN PROGRESS
 def eval_fn(data_loader, model, device, iteration, writer):
-    model.eval()
-    losses = utils.AverageMeter()
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
-    m = torch.nn.Sigmoid()
+    THRESHOLDS = [0.1, 0.3, 0.5]
+    for THRESHOLD in THRESHOLDS:
+        print(f"threshold: {THRESHOLD}")
+        model.eval()
+        losses = utils.AverageMeter()
+        TP = 0
+        TN = 0
+        FP = 0
+        FN = 0
+        m = torch.nn.Sigmoid()
 
-    with torch.no_grad():
-        for bi, d in enumerate(data_loader):
-            ids = d['ids']
-            mask = d['mask']
-            classifier_labels = d['classifier_labels']
+        with torch.no_grad():
+            for bi, d in enumerate(data_loader):
+                ids = d['ids']
+                mask = d['mask']
+                classifier_labels = d['classifier_labels']
 
-            ids = ids.to(device, dtype=torch.long)
-            mask = mask.to(device, dtype=torch.long)
-            classifier_labels = classifier_labels.to(device, dtype=torch.float)
+                ids = ids.to(device, dtype=torch.long)
+                mask = mask.to(device, dtype=torch.long)
+                classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
-            outputs = model(ids=ids, mask=mask)
+                outputs = model(ids=ids, mask=mask)
         
-            loss = classifier_loss_fn(outputs, classifier_labels)
+                loss = classifier_loss_fn(outputs, classifier_labels)
 
-            outputs = (m(outputs.squeeze(-1)) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
-            tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
-                                              outputs, labels=[0, 1]).ravel()
-            TP += tp
-            TN += tn
-            FP += fp
-            FN += fn
+                outputs = (m(outputs.squeeze(-1)) > THRESHOLD).cpu().detach().numpy() # 0 or 1
+                tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
+                                                  outputs, labels=[0, 1]).ravel()
+                TP += tp
+                TN += tn
+                FP += fp
+                FN += fn
 
-            losses.update(loss.item(), ids.size(0))
+                losses.update(loss.item(), ids.size(0))
     
-    writer.add_scalar('Loss/val', losses.avg, iteration)
-    print(f'Val loss iter {iteration}= {losses.avg}')
-    accuracy = (TP+TN)/(TP+TN+FP+FN)
-    print(f'Val accuracy {iteration}= {accuracy}')
-    recall = TP/(TP+FN)
-    print(f'Val recall {iteration}= {recall}')
+        writer.add_scalar('Loss/val', losses.avg, iteration)
+        print(f'Val loss iter {iteration}= {losses.avg}')
+        positive_rate = (TP+FP)/(TP+TN+FP+FN)
+        print(f'Val positive_rate {iteration}= {positive_rate}')
+        accuracy = (TP+TN)/(TP+TN+FP+FN)
+        print(f'Val accuracy {iteration}= {accuracy}')
+        recall = TP/(TP+FN)
+        print(f'Val recall {iteration}= {recall}')
     return recall

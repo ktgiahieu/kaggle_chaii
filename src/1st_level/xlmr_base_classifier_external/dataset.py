@@ -138,7 +138,7 @@ class ChaiiDataset:
         self.mode = mode
 
     def __len__(self):
-        return len(self.features)
+        return len(self.sampled_features) if self.mode == 'train' else len(self.features)
 
     def __getitem__(self, item):
         """Returns preprocessed data sample as dict with
