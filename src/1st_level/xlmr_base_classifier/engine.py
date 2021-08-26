@@ -1,6 +1,5 @@
 from shutil import copyfile
 from sklearn.metrics import confusion_matrix
-import random
 
 import numpy as np
 import torch
@@ -40,10 +39,6 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         for bi, d in enumerate(tk0):
             torch.cuda.empty_cache()
             gc.collect()
-            print(d['sampling_rate'])
-            if random.random() > d['sampling_rate']:
-                continue
-
             ids = d['ids']
             mask = d['mask']
             classifier_labels = d['classifier_labels']
