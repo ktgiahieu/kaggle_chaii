@@ -37,7 +37,7 @@ else: #colab
 # Model params
 SEEDS = [1000, 42, 456]
 N_FOLDS = 5
-EPOCHS = 1
+EPOCHS = 5
 CLASSIFIER_THRESHOLD = 0.5
 NEGATIVE_POSITIVE_RATIO = 3.0 # negative/positive
 
