@@ -42,7 +42,8 @@ def run(fold):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
