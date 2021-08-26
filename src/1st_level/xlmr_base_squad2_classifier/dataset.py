@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import random
 
 import config
 
@@ -10,13 +11,12 @@ def uniform_negative_sampling(features, num_positive):
     num_negative = len(features) - num_positive
     num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
     negative_sampling_rate = num_negative_preferred / num_negative
+    sampled_features = []
     for i in range(len(features)):
         feature = features[i]
-        if feature['classifier_labels'] == [0]:
-            feature['sampling_rate'] = negative_sampling_rate
-        else:
-            feature['sampling_rate'] = 1.0
-        features[i] = feature
+        if feature['classifier_labels'] == [1] or random.random() < negative_sampling_rate:
+            sampled_features.append(feature)
+    print(f"len(sampled_features): {len(sampled_features)}")
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
     return features
