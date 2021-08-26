@@ -6,6 +6,17 @@ import config
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
+def uniform_negative_sampling(features, num_positive):
+    num_negative = len(features) - num_positive
+    num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
+    negative_sampling_rate = num_negative / num_negative_preferred
+    for i in range(len(features)):
+        features[i]['negative_sampling_rate'] = negative_sampling_rate
+
+    print(f"num_negative: {num_negative}")
+    print(f"num_negative_preferred: {num_negative_preferred}")
+    return features
+
 def jaccard_array(a, b):
     """Calculates Jaccard on arrays."""
     a = set(a)
@@ -112,7 +123,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                        'orig_answer': answer,
                        'sequence_ids': sequence_ids,}
             features.append(feature)
-        
+    features = uniform_negative_sampling(features, len(ids))
     return features
 
 
