@@ -19,7 +19,7 @@ def uniform_negative_sampling(features, num_positive):
     print(f"len(sampled_features): {len(sampled_features)}")
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
-    return features
+    return sampled_features
 
 def jaccard_array(a, b):
     """Calculates Jaccard on arrays."""
