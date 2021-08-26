@@ -9,7 +9,7 @@ os.environ['TOKENIZERS_PARALLELISM'] = "true"
 def uniform_negative_sampling(features, num_positive):
     num_negative = len(features) - num_positive
     num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
-    negative_sampling_rate = num_negative / num_negative_preferred
+    negative_sampling_rate = num_negative_preferred / num_negative
     for i in range(len(features)):
         feature = features[i]
         if feature['classifier_labels'] == [0]:
@@ -17,7 +17,6 @@ def uniform_negative_sampling(features, num_positive):
         else:
             feature['sampling_rate'] = 1.0
         features[i] = feature
-    print(features[0])
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
     return features
@@ -129,7 +128,6 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                        'sequence_ids': sequence_ids,}
             features.append(feature)
     features = uniform_negative_sampling(features, len(ids))
-    print(features[0])
     return features
 
 
@@ -154,4 +152,6 @@ class ChaiiDataset:
                 'end_labels': torch.tensor(data['end_labels'],
                                            dtype=torch.float),
                 'classifier_labels':torch.tensor(data['classifier_labels'],
+                                           dtype=torch.float),
+                'sampling_rate':torch.tensor(data['sampling_rate'],
                                            dtype=torch.float),}
