@@ -10,6 +10,8 @@ class ChaiiClassifierModel(transformers.BertPreTrainedModel):
             config.MODEL_CONFIG,
             config=conf)
 
+        self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
+
         self.classifier = torch.nn.Sequential(
             torch.nn.Dropout(config.CLASSIFIER_DROPOUT),
             torch.nn.Linear(config.HIDDEN_SIZE*6, config.HIDDEN_SIZE*4),
@@ -27,5 +29,10 @@ class ChaiiClassifierModel(transformers.BertPreTrainedModel):
             tuple(out[-i - 1][:,0,:] for i in range(config.N_LAST_HIDDEN)), dim=-1)
         out = out.squeeze(1)
 
-        logits = self.classifier(out)
+        # Multisample Dropout: https://arxiv.org/abs/1905.09788
+        logits = torch.mean(torch.stack([
+            self.classifier(self.high_dropout(out))
+            for _ in range(5)
+        ], dim=0), dim=0)
+
         return logits
