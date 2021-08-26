@@ -93,7 +93,7 @@ def run(fold):
             FN += fn
 
             true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
-            predicted_labels.extend(outputs.squeeze(-1).tolist())
+            predicted_labels.extend(outputs.tolist())
     
     print(f'Loss = {losses.avg}')
     accuracy = (TP+TN)/(TP+TN+FP+FN)
