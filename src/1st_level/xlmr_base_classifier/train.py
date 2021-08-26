@@ -25,7 +25,8 @@ def run(fold, seed):
         contexts=df_train.context.values,
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
-        answer_starts=df_train.answer_start.values)
+        answer_starts=df_train.answer_start.values,
+        mode='train')
 
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -38,7 +39,8 @@ def run(fold, seed):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,

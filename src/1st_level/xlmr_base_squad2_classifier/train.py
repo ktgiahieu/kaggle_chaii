@@ -25,7 +25,8 @@ def run(fold, seed):
         contexts=df_train.context.values,
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
-        answer_starts=df_train.answer_start.values)
+        answer_starts=df_train.answer_start.values,
+        mode='train')
 
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -38,7 +39,8 @@ def run(fold, seed):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
@@ -73,10 +75,14 @@ def run(fold, seed):
         swa_start=int(num_train_steps * config.SWA_RATIO),
         swa_freq=config.SWA_FREQ,
         swa_lr=None)
-    scheduler = transformers.get_linear_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
-        num_training_steps=num_train_steps)
+
+    scheduler = transformers.get_constant_schedule(
+        optimizer=optimizer)
+
+    #scheduler = transformers.get_linear_schedule_with_warmup(
+    #    optimizer=optimizer,
+    #    num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
+    #    num_training_steps=num_train_steps)
 
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')

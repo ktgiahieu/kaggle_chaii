@@ -127,14 +127,15 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts)
                        'orig_answer': answer,
                        'sequence_ids': sequence_ids,}
             features.append(feature)
-    features = uniform_negative_sampling(features, len(ids))
     return features
 
 
 class ChaiiDataset:
-    def __init__(self, ids, contexts, questions, answers, answer_starts):
+    def __init__(self, ids, contexts, questions, answers, answer_starts, mode='train'):
         self.tokenizer = config.TOKENIZER
         self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts)
+        self.sampled_features = uniform_negative_sampling(self.features, len(ids))
+        self.mode = mode
 
     def __len__(self):
         return len(self.features)
@@ -143,13 +144,25 @@ class ChaiiDataset:
         """Returns preprocessed data sample as dict with
         data converted to tensors.
         """
-        data = self.features[item]
+        if self.mode == 'train':
+            data = self.sampled_features[item]
 
-        return {'ids': torch.tensor(data['ids'], dtype=torch.long),
-                'mask': torch.tensor(data['mask'], dtype=torch.long),
-                'start_labels': torch.tensor(data['start_labels'],
-                                             dtype=torch.float),
-                'end_labels': torch.tensor(data['end_labels'],
-                                           dtype=torch.float),
-                'classifier_labels':torch.tensor(data['classifier_labels'],
-                                           dtype=torch.float),}
+            return {'ids': torch.tensor(data['ids'], dtype=torch.long),
+                    'mask': torch.tensor(data['mask'], dtype=torch.long),
+                    'start_labels': torch.tensor(data['start_labels'],
+                                                 dtype=torch.float),
+                    'end_labels': torch.tensor(data['end_labels'],
+                                               dtype=torch.float),
+                    'classifier_labels':torch.tensor(data['classifier_labels'],
+                                               dtype=torch.float),}
+        else: #valid
+            data = self.features[item]
+
+            return {'ids': torch.tensor(data['ids'], dtype=torch.long),
+                    'mask': torch.tensor(data['mask'], dtype=torch.long),
+                    'start_labels': torch.tensor(data['start_labels'],
+                                                 dtype=torch.float),
+                    'end_labels': torch.tensor(data['end_labels'],
+                                               dtype=torch.float),
+                    'classifier_labels':torch.tensor(data['classifier_labels'],
+                                               dtype=torch.float),}
