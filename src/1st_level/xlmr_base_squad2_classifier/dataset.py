@@ -11,10 +11,12 @@ def uniform_negative_sampling(features, num_positive):
     num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
     negative_sampling_rate = num_negative / num_negative_preferred
     for i in range(len(features)):
-        if features[i]['classifier_labels'] == [0]:
-            features[i]['sampling_rate'] = negative_sampling_rate
+        feature = features[i]
+        if feature['classifier_labels'] == [0]:
+            feature['sampling_rate'] = negative_sampling_rate
         else:
-            features[i]['sampling_rate'] = 1.0
+            feature['sampling_rate'] = 1.0
+        features[i] = feature
 
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
