@@ -170,7 +170,7 @@ class ChaiiDataset:
         self.mode = mode
         self.features = None
         self.sampled_features = None
-        if hns_features is None:
+        if hns_features is not None:
             self.features = hns_features
             self.sampled_features = hard_negative_sampling(self.features)
         else:
