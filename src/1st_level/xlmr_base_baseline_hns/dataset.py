@@ -39,7 +39,7 @@ def hard_negative_sampling(hns_features):
         probs = [x['predicted_labels'] for x in current_document_features]
         norm_probs = [float(x)/sum(probs) for x in probs]
         for i, document_feature in enumerate(current_document_features):
-            if random.random() < norm_probs[i]:
+            if random.random() < norm_probs[i]*config.NEGATIVE_POSITIVE_RATIO:
                 sampled_features.append(document_feature)
 
         current_document_features = []
@@ -48,7 +48,7 @@ def hard_negative_sampling(hns_features):
     probs = [x['predicted_labels'] for x in current_document_features]
     norm_probs = [float(x)/sum(probs) for x in probs]
     for i, document_feature in enumerate(current_document_features):
-        if random.random() < norm_probs[i]:
+        if random.random() < norm_probs[i]*config.NEGATIVE_POSITIVE_RATIO:
             sampled_features.append(document_feature)
     
     print(f"hns_features: {len(hns_features)}")
