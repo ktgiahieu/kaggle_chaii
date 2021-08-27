@@ -91,6 +91,7 @@ def run(fold):
     for i,feature in enumerate(all_features):
         feature['true_labels'] = true_labels[i]
         feature['predicted_labels'] = predicted_labels[i]
+        feature['kfold'] = fold
         all_features[i] = feature
 
     return all_features
