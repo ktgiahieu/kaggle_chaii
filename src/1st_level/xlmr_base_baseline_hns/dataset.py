@@ -24,7 +24,7 @@ def uniform_negative_sampling(features, num_positive):
 def hard_negative_sampling(hns_features):
     sampled_features = []
     current_document_features = []
-    print([x['ids'] for x in hns_features[:20]])
+    print([x['example_ids'] for x in hns_features[:20]])
     for i in range(len(hns_features)):
         feature = hns_features[i]
         if feature['classifier_labels'] == [1]:
