@@ -143,7 +143,7 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
     
-    writer.add_scalar('Loss/val', losses.avg, iteration)
+    writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
 
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
