@@ -80,7 +80,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             step += 1
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
-        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
+        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch' or config.SAVE_CHECKPOINT_TYPE == 'best_iter':
             val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
