@@ -51,8 +51,8 @@ def hard_negative_sampling(hns_features):
         if random.random() < norm_probs[i]:
             sampled_features.append(document_feature)
     
-    print(f"hns_features: {hns_features}")
-    print(f"sampled_features: {sampled_features}")
+    print(f"hns_features: {len(hns_features)}")
+    print(f"sampled_features: {len(sampled_features)}")
     return sampled_features
 
 def jaccard_array(a, b):
