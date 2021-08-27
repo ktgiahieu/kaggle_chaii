@@ -24,6 +24,7 @@ def uniform_negative_sampling(features, num_positive):
 def hard_negative_sampling(hns_features):
     sampled_features = []
     current_document_features = []
+    print(x['ids'] for x in hns_features)
     for i in range(len(hns_features)):
         feature = hns_features[i]
         if feature['classifier_labels'] == [1]:
@@ -37,9 +38,7 @@ def hard_negative_sampling(hns_features):
             continue
 
         probs = [x['predicted_labels'] for x in current_document_features]
-        print(probs)
         norm_probs = [float(x)/sum(probs) for x in probs]
-        print(norm_probs)
         for i, document_feature in enumerate(current_document_features):
             if random.random() < norm_probs[i]:
                 sampled_features.append(document_feature)
