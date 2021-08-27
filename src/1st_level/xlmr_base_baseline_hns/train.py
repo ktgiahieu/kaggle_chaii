@@ -1,4 +1,5 @@
 import os
+import pickle
 import numpy as np
 import pandas as pd
 import transformers
@@ -20,12 +21,19 @@ def run(fold, seed):
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
+    with open(config.TRAINING_FILE_PICKLE, 'rb') as handle:
+        hns_features = pickle.load(handle)
+
+    hns_features = [x for x in hns_features if x['kfold'] != fold]
+
     train_dataset = dataset.ChaiiDataset(
         ids=df_train.id.values,
         contexts=df_train.context.values,
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
-        answer_starts=df_train.answer_start.values)
+        answer_starts=df_train.answer_start.values,
+        hns_features=hns_features,
+        mode='train')
 
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -38,7 +46,8 @@ def run(fold, seed):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
