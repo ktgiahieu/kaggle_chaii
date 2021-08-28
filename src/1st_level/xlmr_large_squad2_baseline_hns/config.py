@@ -25,7 +25,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'xlmr_large_squad2_baseline_hns'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
     TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/xlmr_base_classifier.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
