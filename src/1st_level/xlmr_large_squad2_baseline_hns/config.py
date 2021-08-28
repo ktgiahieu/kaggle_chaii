@@ -43,9 +43,9 @@ NEGATIVE_POSITIVE_RATIO = 2.0
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
-TRAIN_BATCH_SIZE = 4
+TRAIN_BATCH_SIZE = 2
 VALID_BATCH_SIZE = 8
-ACCUMULATION_STEPS = 2
+ACCUMULATION_STEPS = 4
 MAX_LEN = 384
 DOC_STRIDE = 128
 
@@ -65,7 +65,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 300*ACCUMULATION_STEPS),
+                (10., 81*ACCUMULATION_STEPS),
                 ]
 
 #Layer wise learning rate
