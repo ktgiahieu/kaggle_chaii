@@ -41,7 +41,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         #], dim=0), dim=0)
         out = out.last_hidden_state
 
-        self.classifier(out)
+        logits = self.classifier(out)
 
         start_logits, end_logits = logits.split(1, dim=-1)
 
