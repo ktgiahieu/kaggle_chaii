@@ -81,10 +81,8 @@ def run(seed):
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')
 
-    print(f'Training is starting for fold={fold}')
-
     score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
-                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
+                    device, writer, f'{config.MODEL_SAVE_PATH}/model.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()
@@ -96,7 +94,7 @@ if __name__ == '__main__':
     for seed in config.SEEDS:
         utils.seed_everything(seed=seed)
         print(f"Training with SEED={seed}")
-        writer = SummaryWriter(f"logs/fold{i}_seed{seed}")
+        writer = SummaryWriter(f"logs/seed{seed}")
         fold_score = run(seed)
         fold_scores.append(fold_score)
         writer.close()

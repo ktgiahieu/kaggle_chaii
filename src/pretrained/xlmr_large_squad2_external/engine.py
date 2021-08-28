@@ -12,7 +12,8 @@ import utils
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     m = torch.nn.LogSoftmax(dim=1)
-    loss_fct = torch.nn.KLDivLoss()
+    #loss_fct = torch.nn.KLDivLoss()
+    loss_fct = torch.nn.CrossEntropyLoss()
     start_loss = loss_fct(m(start_logits), start_positions)
     end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = (start_loss + end_loss)
@@ -40,8 +41,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
-            start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            #start_labels = start_labels.to(device, dtype=torch.float)
+            #end_labels = start_labels.to(device, dtype=torch.float)
+            start_labels = start_labels.to(device, dtype=torch.long)
+            end_labels = start_labels.to(device, dtype=torch.long)
 
             model.train()
             
@@ -72,7 +75,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                         if not best_val_score or val_score > best_val_score:                    
                             best_val_score = val_score
                             best_epoch = epoch
-                            torch.save(model.state_dict(), f'/content/{model_path_filename}')
+                            torch.save(model.state_dict(), f'./{model_path_filename}')
                             print(f"New best_val_score: {best_val_score:0.4}")
                         else:       
                             print(f"Still best_val_score: {best_val_score:0.4}",
@@ -85,14 +88,14 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
                 best_epoch = epoch
-                torch.save(model.state_dict(), f'/content/{model_path_filename}')
+                torch.save(model.state_dict(), f'./{model_path_filename}')
                 print(f"New best_val_score: {best_val_score:0.4}")
             else:       
                 print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
-            torch.save(model.state_dict(), f'/content/{model_path_filename}')
-        copyfile(f'/content/{model_path_filename}', model_path)
+            torch.save(model.state_dict(), f'./{model_path_filename}')
+        copyfile(f'./{model_path_filename}', model_path)
         print("Copied best checkpoint to google drive.")
     return best_val_score
 
