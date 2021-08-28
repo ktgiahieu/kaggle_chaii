@@ -102,8 +102,9 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
             torch.save(model.state_dict(), f'./{model_path_filename}')
-        copyfile(f'./{model_path_filename}', model_path)
-        print("Copied best checkpoint to google drive.")
+        if not config.is_kaggle:
+            copyfile(f'./{model_path_filename}', model_path)
+            print("Copied best checkpoint to google drive.")
     return best_val_score
 
 # IN PROGRESS
