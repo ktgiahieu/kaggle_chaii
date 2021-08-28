@@ -175,7 +175,8 @@ class ChaiiDataset:
             self.sampled_features = hard_negative_sampling(self.features)
         else:
             self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts)
-            self.sampled_features = uniform_negative_sampling(self.features, len(ids))
+            if mode=='train':
+                self.sampled_features = uniform_negative_sampling(self.features, len(ids))
         
     def __len__(self):
         return len(self.sampled_features) if self.mode == 'train' else len(self.features)

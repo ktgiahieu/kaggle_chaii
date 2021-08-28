@@ -134,7 +134,8 @@ class ChaiiDataset:
     def __init__(self, ids, contexts, questions, answers, answer_starts, mode='train'):
         self.tokenizer = config.TOKENIZER
         self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts)
-        self.sampled_features = uniform_negative_sampling(self.features, len(ids))
+        if mode=='train':
+            self.sampled_features = uniform_negative_sampling(self.features, len(ids))
         self.mode = mode
 
     def __len__(self):
