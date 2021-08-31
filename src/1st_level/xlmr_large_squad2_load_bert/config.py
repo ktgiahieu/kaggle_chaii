@@ -10,7 +10,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 model_type = 'xlm-roberta-large'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-large-squad2-load-all'
+my_model_dataset = 'chaii-xlmr-large-squad2-load-bert'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -23,7 +23,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_large_squad2_load_all'
+    model_save = 'xlmr_large_squad2_load_bert'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -33,7 +33,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/xlmr_large_squad2_external'
 
 # Model params
 SEEDS = [1000, 42, 456]
