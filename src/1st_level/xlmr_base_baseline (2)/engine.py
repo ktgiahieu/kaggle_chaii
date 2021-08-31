@@ -10,13 +10,14 @@ import utils
 
 
 def loss_fn(start_logits, end_logits,
-            start_labels, end_labels):
+            start_positions, end_positions):
     m = torch.nn.LogSoftmax(dim=1)
     loss_fct = torch.nn.KLDivLoss()
-    start_loss = loss_fct(m(start_logits), start_labels)
-    end_loss = loss_fct(m(end_logits), end_labels)
-    total_loss = start_loss + end_loss
+    start_loss = loss_fct(m(start_logits), start_positions)
+    end_loss = loss_fct(m(end_logits), end_positions)
+    total_loss = (start_loss + end_loss)
     return total_loss
+
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
@@ -71,7 +72,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                         if not best_val_score or val_score > best_val_score:                    
                             best_val_score = val_score
                             best_epoch = epoch
-                            torch.save(model.state_dict(), f'./{model_path_filename}')
+                            torch.save(model.state_dict(), f'/content/{model_path_filename}')
                             print(f"New best_val_score: {best_val_score:0.4}")
                         else:       
                             print(f"Still best_val_score: {best_val_score:0.4}",
@@ -84,16 +85,15 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
                 best_epoch = epoch
-                torch.save(model.state_dict(), f'./{model_path_filename}')
+                torch.save(model.state_dict(), f'/content/{model_path_filename}')
                 print(f"New best_val_score: {best_val_score:0.4}")
             else:       
                 print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
-            torch.save(model.state_dict(), f'./{model_path_filename}')
-        if not config.is_kaggle:
-            copyfile(f'./{model_path_filename}', model_path)
-            print("Copied best checkpoint to google drive.")
+            torch.save(model.state_dict(), f'/content/{model_path_filename}')
+        copyfile(f'/content/{model_path_filename}', model_path)
+        print("Copied best checkpoint to google drive.")
     return best_val_score
 
 # IN PROGRESS
