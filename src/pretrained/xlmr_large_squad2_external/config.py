@@ -28,8 +28,8 @@ else: #colab
     TRAINING_FILE = f'/content/{repo_name}/data/external.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
-    TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
+    MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}'
+    TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
     MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
@@ -62,7 +62,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 300*ACCUMULATION_STEPS),
+                (10., 200*ACCUMULATION_STEPS),
                 ]
 
 
