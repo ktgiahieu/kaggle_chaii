@@ -96,7 +96,6 @@ if __name__ == '__main__':
         print(f"Training with SEED={seed}")
         writer = SummaryWriter(f"logs/seed{seed}")
         fold_score = run(seed)
-        fold_scores.append(fold_score)
         writer.close()
 
         print(f'Score = {fold_score}')
