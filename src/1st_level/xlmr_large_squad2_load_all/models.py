@@ -19,20 +19,22 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         #)
 
         self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
-        self.classifier = torch.nn.Linear(config.HIDDEN_SIZE * 2, 2)
+        self.classifier = torch.nn.Linear(config.HIDDEN_SIZE, 2)
 
         torch.nn.init.normal_(self.classifier.weight, std=0.02)
 
     def forward(self, ids, mask):
         out = self.automodel(ids, attention_mask=mask)
 
-        # Mean-max pooler
-        out = out.hidden_states
-        out = torch.stack(
-            tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN)), dim=0)
-        out_mean = torch.mean(out, dim=0)
-        out_max, _ = torch.max(out, dim=0)
-        pooled_last_hidden_states = torch.cat((out_mean, out_max), dim=-1)
+        ## Mean-max pooler
+        #out = out.hidden_states
+        #out = torch.stack(
+        #    tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN)), dim=0)
+        #out_mean = torch.mean(out, dim=0)
+        #out_max, _ = torch.max(out, dim=0)
+        #pooled_last_hidden_states = torch.cat((out_mean, out_max), dim=-1)
+
+        pooled_last_hidden_states = out.last_hidden_state
 
         ## Mean-std pooler
         #out = out.hidden_states
