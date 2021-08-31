@@ -41,7 +41,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = end_labels.to(device, dtype=torch.float)
 
             model.train()
             
