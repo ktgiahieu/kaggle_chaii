@@ -112,7 +112,7 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = end_labels.to(device, dtype=torch.float)
 
             outputs_start, outputs_end = model(ids=ids, mask=mask)
         
