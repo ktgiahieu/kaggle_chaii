@@ -42,11 +42,13 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         #out_std = torch.std(out, dim=0)
         #pooled_last_hidden_states = torch.cat((out_mean, out_std), dim=-1)
 
-        # Multisample Dropout: https://arxiv.org/abs/1905.09788
-        logits = torch.mean(torch.stack([
-            self.classifier(self.high_dropout(pooled_last_hidden_states))
-            for _ in range(5)
-        ], dim=0), dim=0)
+        ## Multisample Dropout: https://arxiv.org/abs/1905.09788
+        #logits = torch.mean(torch.stack([
+        #    self.classifier(self.high_dropout(pooled_last_hidden_states))
+        #    for _ in range(5)
+        #], dim=0), dim=0)
+
+        logits = self.classifier(pooled_last_hidden_states)
 
         start_logits, end_logits = logits.split(1, dim=-1)
 
