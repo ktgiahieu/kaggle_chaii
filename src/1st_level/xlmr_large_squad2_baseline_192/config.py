@@ -10,7 +10,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 model_type = 'xlm-roberta-large'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-large-squad2-baseline-320'
+my_model_dataset = 'chaii-xlmr-large-squad2-baseline-192'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -23,7 +23,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_large_squad2_baseline_320'
+    model_save = 'xlmr_large_squad2_baseline_192'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -41,11 +41,11 @@ EPOCHS = 1
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
-TRAIN_BATCH_SIZE = 4
-VALID_BATCH_SIZE = 4
-ACCUMULATION_STEPS = 4
-MAX_LEN = 320
-DOC_STRIDE = 128
+TRAIN_BATCH_SIZE = 2
+VALID_BATCH_SIZE = 2
+ACCUMULATION_STEPS = 8
+MAX_LEN = 384
+DOC_STRIDE = 192
 
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_CONFIG)
