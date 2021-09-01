@@ -36,7 +36,7 @@ else: #colab
     MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/xlmr_large_squad2_external'
 
 # Model params
-SEEDS = [1000, 42, 456]
+SEEDS = [1000]
 N_FOLDS = 5
 EPOCHS = 1
 
