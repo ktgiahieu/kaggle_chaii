@@ -12,10 +12,37 @@ def uniform_negative_sampling(features, num_positive):
     num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
     negative_sampling_rate = num_negative_preferred / num_negative
     sampled_features = []
+
+    current_document_features = []
     for i in range(len(features)):
         feature = features[i]
-        if feature['classifier_labels'] == [1] or random.random() < negative_sampling_rate:
+        if feature['classifier_labels'] == [1]:
             sampled_features.append(feature)
+            continue
+        if len(current_document_features)==0:
+            current_document_features.append(feature)
+            continue
+        if current_document_features[0]['example_ids'] == feature['example_ids']:
+            current_document_features.append(feature)
+            continue
+
+        prob = 1.0/(len(current_document_features) * num_positive)
+        for i, document_feature in enumerate(current_document_features):
+            if random.random() < prob*config.NEGATIVE_POSITIVE_RATIO:
+                sampled_features.append(document_feature)
+
+        current_document_features = []
+        current_document_features.append(feature)
+
+    prob = 1.0/(len(current_document_features) * num_positive)
+    for i, document_feature in enumerate(current_document_features):
+        if random.random() < prob*config.NEGATIVE_POSITIVE_RATIO:
+            sampled_features.append(document_feature)
+
+    #for i in range(len(features)):
+    #    feature = features[i]
+    #    if feature['classifier_labels'] == [1] or random.random() < negative_sampling_rate:
+    #        sampled_features.append(feature)
     print(f"len(sampled_features): {len(sampled_features)}")
     print(f"num_negative: {num_negative}")
     print(f"num_negative_preferred: {num_negative_preferred}")
@@ -198,3 +225,12 @@ class ChaiiDataset:
                                                dtype=torch.float),}
         else: #valid
             data = self.features[item]
+            
+            return {'ids': torch.tensor(data['ids'], dtype=torch.long),
+                    'mask': torch.tensor(data['mask'], dtype=torch.long),
+                    'start_labels': torch.tensor(data['start_labels'],
+                                                 dtype=torch.float),
+                    'end_labels': torch.tensor(data['end_labels'],
+                                               dtype=torch.float),
+                    'classifier_labels':torch.tensor(data['classifier_labels'],
+                                               dtype=torch.float),}
