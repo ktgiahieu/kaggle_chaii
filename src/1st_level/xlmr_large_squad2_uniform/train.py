@@ -48,6 +48,9 @@ def run(fold, seed):
         num_workers=4,
         shuffle=False)
 
+    for bi, d in enumerate(train_data_loader):
+        print(bi)
+
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
         config.MODEL_CONFIG)
