@@ -50,6 +50,8 @@ def run(fold, seed):
 
     for bi, d in enumerate(train_data_loader):
         print(bi)
+    for bi, d in enumerate(valid_data_loader):
+        print(bi)
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
