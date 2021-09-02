@@ -27,8 +27,6 @@ def uniform_negative_sampling(features, num_positive):
             continue
 
         prob = 1.0/len(current_document_features)
-        print(len(current_document_features))
-        print(prob)
         for i, document_feature in enumerate(current_document_features):
             if random.random() < prob*config.NEGATIVE_POSITIVE_RATIO:
                 sampled_features.append(document_feature)
