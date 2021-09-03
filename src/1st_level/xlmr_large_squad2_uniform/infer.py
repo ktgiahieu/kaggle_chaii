@@ -30,7 +30,8 @@ def run():
         contexts=df_test.context.values,
         questions=df_test.question.values,
         answers=df_test.answer_text.values,
-        answer_starts=df_test.answer_start.values)
+        answer_starts=df_test.answer_start.values,
+        mode = 'infer')
 
     data_loader = torch.utils.data.DataLoader(
         test_dataset,
