@@ -35,7 +35,7 @@ else: #colab
     MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
 
 # Model params
-SEEDS = [1000, 42, 456]
+SEEDS = [1000]
 N_FOLDS = 5
 EPOCHS = 3
 CLASSIFIER_THRESHOLD = 0.5
