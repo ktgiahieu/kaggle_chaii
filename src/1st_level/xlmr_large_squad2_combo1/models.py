@@ -18,9 +18,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
 
         self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
         #self.classifier = torch.nn.Linear(config.HIDDEN_SIZE*2, 2)
-
-
-        torch.nn.init.normal_(self.classifier.weight, std=0.02)
+        #torch.nn.init.normal_(self.classifier.weight, std=0.02)
 
     def forward(self, ids, mask):
         out = self.automodel(ids, attention_mask=mask)
