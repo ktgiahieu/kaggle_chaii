@@ -12,7 +12,7 @@ comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmr-base-baseline'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -25,7 +25,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'xlmr_base_baseline'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
