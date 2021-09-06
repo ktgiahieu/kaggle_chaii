@@ -12,7 +12,7 @@ comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmr-large-squad2-loadall-hns'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/train_folds.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -25,7 +25,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'xlmr_large_squad2_loadall_hns'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
     TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/xlmr_base_classifier.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
