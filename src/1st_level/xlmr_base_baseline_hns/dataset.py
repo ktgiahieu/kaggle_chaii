@@ -65,6 +65,7 @@ def jaccard_array(a, b):
 def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts):
     features = []
     for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
+        question = question.strip()
         tokenized_example = tokenizer(
             question,
             context,
