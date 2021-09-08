@@ -132,12 +132,16 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
             answer_end_num_current_logit = np.zeros(len(context), dtype=np.float)
 
             for start_index in range(len(start_logits)):
+                if offsets[start_index] is None:
+                    continue
                 start_char = offsets[start_index][0]
 
                 answer_start_sum_current_logit[start_char] = start_logits[start_index]
                 answer_start_num_current_logit[start_char] = 1
 
             for end_index in range(len(end_logits)):
+                if offsets[end_index] is None:
+                    continue
                 end_char = offsets[end_index][1]
 
                 answer_end_sum_current_logit[end_char] = end_logits[end_index]
