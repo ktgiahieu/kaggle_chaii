@@ -143,7 +143,8 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
                 if offsets[end_index] is None:
                     continue
                 end_char = offsets[end_index][1]
-
+                print(answer_end_sum_current_logit[end_char])
+                print(end_logits[end_index])
                 answer_end_sum_current_logit[end_char] = end_logits[end_index]
                 answer_end_num_current_logit[end_char] = 1
             
