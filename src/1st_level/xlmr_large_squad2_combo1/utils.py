@@ -132,8 +132,7 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
             answer_end_num_current_logit = np.zeros(len(context), dtype=np.float)
 
             print(len(context))
-            print(len(start_logits))
-            print(len(end_logits))
+            print(offsets[-10:])
             for start_index in range(len(start_logits)):
                 if offsets[start_index] is None:
                     continue
