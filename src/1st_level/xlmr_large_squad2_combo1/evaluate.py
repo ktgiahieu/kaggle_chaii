@@ -100,7 +100,7 @@ def run(fold):
     #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
     
     # Heatmap 
-    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
+    predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
     
     df_valid['PredictionString'] = df_valid['id'].map(predictions)
