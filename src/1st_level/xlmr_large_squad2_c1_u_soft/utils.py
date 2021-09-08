@@ -142,7 +142,7 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
             for end_index in range(len(end_logits)):
                 if offsets[end_index] is None:
                     continue
-                end_char = offsets[end_index][1]
+                end_char = offsets[end_index][1] - 1
 
                 answer_end_sum_current_logit[end_char] = end_logits[end_index]
                 answer_end_num_current_logit[end_char] = 1
@@ -172,7 +172,7 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
                 valid_answers.append(
                     {
                         "score": answer_start_sum_logits[start_char] + answer_end_sum_logits[end_char],
-                        "text": context[start_char: end_char]
+                        "text": context[start_char: end_char+1]
                     }
                 )
         
