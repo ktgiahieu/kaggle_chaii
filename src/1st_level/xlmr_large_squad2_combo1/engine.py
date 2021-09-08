@@ -132,13 +132,17 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     predicted_labels_end = torch.cat(
         tuple(x for x in predicted_labels_end), dim=0)
 
-    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
-    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
-    
     #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
-    predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
-                                                   (predicted_labels_start, predicted_labels_end))
+    #Baseline
+    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
+    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
+    #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
+    #                                               (predicted_labels_start, predicted_labels_end))
+    # Heatmap 
+    predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_start, predicted_labels_end))  
+
+
     df_valid['PredictionString'] = df_valid['id'].map(predictions)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
