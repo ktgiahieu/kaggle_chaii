@@ -103,17 +103,22 @@ def run():
     predicted_labels_start = torch.stack(
         tuple(x for x in predicted_labels_start), dim=0)
     predicted_labels_start = torch.mean(predicted_labels_start, dim=0)
-    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
 
     predicted_labels_end = torch.stack(
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
-    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
 
     #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
+    # Baseline
+    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
+    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
     predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
+    # Heatmap 
+    #predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
+    #                                               (predicted_labels_start, predicted_labels_end))
+
+
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')

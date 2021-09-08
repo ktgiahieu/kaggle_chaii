@@ -39,7 +39,8 @@ def run(fold):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
@@ -92,15 +93,17 @@ def run(fold):
         tuple(x for x in predicted_labels_per_fold_start), dim=0)
     predicted_labels_per_fold_end = torch.cat(
         tuple(x for x in predicted_labels_per_fold_end), dim=0)
-
-    predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
-    predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
-    
-    
     #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
-    predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
-                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    ## Baseline
+    #predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
+    #predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
+    #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
+    #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    
+    # Heatmap 
+    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
+                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
+    
     df_valid['PredictionString'] = df_valid['id'].map(predictions)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
