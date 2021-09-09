@@ -99,7 +99,7 @@ def run(fold):
     #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
     #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
     
-    # Heatmap 
+    # Heatmap
     predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
     
