@@ -30,8 +30,7 @@ def run():
         contexts=df_test.context.values,
         questions=df_test.question.values,
         answers=df_test.answer_text.values,
-        answer_starts=df_test.answer_start.values,
-        mode='valid')
+        answer_starts=df_test.answer_start.values)
 
     data_loader = torch.utils.data.DataLoader(
         test_dataset,
@@ -103,17 +102,22 @@ def run():
     predicted_labels_start = torch.stack(
         tuple(x for x in predicted_labels_start), dim=0)
     predicted_labels_start = torch.mean(predicted_labels_start, dim=0)
-    predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
 
     predicted_labels_end = torch.stack(
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
-    predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
 
     #Post process 
-    #(predictions = {'id': 'predicted_text', ...} )
-    predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
+    # Baseline
+    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
+    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
+    #predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
+    #                                               (predicted_labels_start, predicted_labels_end))
+    # Heatmap 
+    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
+
+
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
@@ -132,28 +136,3 @@ def run():
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     run()
-
-    #            outputs_start = outputs_start.cpu().detach().numpy()
-    #            outputs_end = outputs_end.cpu().detach().numpy()
-
-    #            predicted_labels_per_fold_start.append(outputs_start)
-    #            predicted_labels_per_fold_end.append(outputs_end)
-        
-    #    predicted_labels_per_fold_start = np.concatenate(
-    #        tuple(x for x in predicted_labels_per_fold_start), axis=0)
-    #    predicted_labels_per_fold_end = np.concatenate(
-    #        tuple(x for x in predicted_labels_per_fold_end), axis=0)
-
-    #    predicted_labels_start.append(predicted_labels_per_fold_start)
-    #    predicted_labels_end.append(predicted_labels_per_fold_end)
-    
-    ## Raw predictions
-    #predicted_labels_start = np.stack(
-    #    tuple(x for x in predicted_labels_start), axis=0)
-    #predicted_labels_start = np.mean(predicted_labels_start, axis=0)
-    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1)
-
-    #predicted_labels_end = np.stack(
-    #    tuple(x for x in predicted_labels_end), axis=0)
-    #predicted_labels_end = np.mean(predicted_labels_end, axis=0)
-    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1)
