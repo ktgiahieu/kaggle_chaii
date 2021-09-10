@@ -10,7 +10,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 model_type = 'xlm-roberta-large'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-large-squad2-external'
+my_model_dataset = 'chaii-xlmr-large-squad2-c1-external'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/external.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -23,7 +23,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_large_squad2_external'
+    model_save = 'xlmr_large_squad2_c1_external'
     
     TRAINING_FILE = f'/content/{repo_name}/data/external.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'

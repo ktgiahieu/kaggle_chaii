@@ -10,7 +10,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 model_type = 'xlm-roberta-large'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmr-large-squad2-combo1-hnsl'
+my_model_dataset = 'chaii-xlmr-large-squad2-c1-hns-external'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -23,10 +23,10 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmr_large_squad2_combo1_hnsl'
+    model_save = 'xlmr_large_squad2_c1_hns_external'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/xlmr_large_squad2_baseline_classifier.pkl'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/xlmr_large_squad2_combo1_cls.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
