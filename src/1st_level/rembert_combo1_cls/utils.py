@@ -169,7 +169,7 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 def create_optimizer(model):
-    num_layers = CONF.num_hidden_layers
+    num_layers = config.CONF.num_hidden_layers
 
     named_parameters = list(model.named_parameters()) 
     automodel_parameters = list(model.automodel.named_parameters())
