@@ -72,7 +72,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                         if not best_val_score or val_score > best_val_score:                    
                             best_val_score = val_score
                             best_epoch = epoch
-                            torch.save(model.state_dict(), f'/content/{model_path_filename}')
+                            torch.save(model.state_dict(), f'./{model_path_filename}')
                             print(f"New best_val_score: {best_val_score:0.4}")
                         else:       
                             print(f"Still best_val_score: {best_val_score:0.4}",
@@ -85,15 +85,16 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
                 best_epoch = epoch
-                torch.save(model.state_dict(), f'/content/{model_path_filename}')
+                torch.save(model.state_dict(), f'./{model_path_filename}')
                 print(f"New best_val_score: {best_val_score:0.4}")
             else:       
                 print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
-            torch.save(model.state_dict(), f'/content/{model_path_filename}')
-        copyfile(f'/content/{model_path_filename}', model_path)
-        print("Copied best checkpoint to google drive.")
+            torch.save(model.state_dict(), f'./{model_path_filename}')
+        if not config.is_kaggle: #colab
+            copyfile(f'./{model_path_filename}', model_path)
+            print("Copied best checkpoint to google drive.")
     return best_val_score
 
 # IN PROGRESS
