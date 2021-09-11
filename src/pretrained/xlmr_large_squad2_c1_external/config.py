@@ -2,7 +2,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning) 
 
 import tokenizers
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoConfig
 import os
 is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 
