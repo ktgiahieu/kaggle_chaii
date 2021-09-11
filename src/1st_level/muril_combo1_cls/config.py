@@ -2,14 +2,14 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning) 
 
 import tokenizers
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoConfig
 import os
 is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-rembert-c1-hns-external'
+my_model_dataset = 'chaii-rembert-combo1-cls'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -22,13 +22,11 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'rembert_c1_hns_external'
+    model_save = 'rembert_combo1_cls'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/xlmr_large_squad2_combo1_cls.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/xlmr_large_squad2_c1_external/model.bin'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
@@ -39,7 +37,8 @@ else: #colab
 SEEDS = [1000]
 N_FOLDS = 5
 EPOCHS = 3
-NEGATIVE_POSITIVE_RATIO = 3.0
+CLASSIFIER_THRESHOLD = 0.5
+NEGATIVE_POSITIVE_RATIO = 3.0 # negative/positive
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
@@ -58,7 +57,8 @@ CONF = AutoConfig.from_pretrained(
 N_LAST_HIDDEN = 4
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5
-SOFT_ALPHA = 0.6
+CLASSIFIER_DROPOUT = 0
+SOFT_ALPHA = 1.0
 WARMUP_RATIO = 0.1
 
 USE_SWA = False
@@ -72,7 +72,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 1e-4
+HEAD_LEARNING_RATE = 3e-4
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [5e-6, 5e-5]
+LEARNING_RATES_RANGE = [1.5e-5/2.6, 1.5e-5*2.6]
 WEIGHT_DECAY = 0.01
