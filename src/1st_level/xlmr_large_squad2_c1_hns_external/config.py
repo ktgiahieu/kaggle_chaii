@@ -37,7 +37,7 @@ else: #colab
     MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
 
 # Model params
-SEEDS = [1000]
+SEEDS = [42]
 N_FOLDS = 5
 EPOCHS = 3
 NEGATIVE_POSITIVE_RATIO = 3.0
@@ -57,7 +57,7 @@ HIDDEN_SIZE = 1024
 N_LAST_HIDDEN = 4
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5
-SOFT_ALPHA = 1.0
+SOFT_ALPHA = 0.8
 WARMUP_RATIO = 0.1
 
 USE_SWA = False

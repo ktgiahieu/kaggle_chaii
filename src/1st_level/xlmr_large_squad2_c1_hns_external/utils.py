@@ -338,6 +338,5 @@ def create_optimizer(model):
         parameters.append({"params": params,
                            "weight_decay": weight_decay,
                            "lr": lr})
-        print(name, lr)
         last_lr = lr
     return torch.optim.AdamW(parameters, eps=1e-06)
