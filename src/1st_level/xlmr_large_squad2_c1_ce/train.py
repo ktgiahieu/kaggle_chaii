@@ -47,8 +47,7 @@ def run(fold, seed):
         shuffle=False)
 
     device = torch.device('cuda')
-    model_config = transformers.AutoConfig.from_pretrained(
-        config.MODEL_CONFIG)
+    model_config = config.MODEL_CONF
     model_config.output_hidden_states = True
     ##
     model_config.hidden_dropout_prob = config.BERT_DROPOUT

@@ -169,16 +169,7 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 def create_optimizer(model):
-    num_layers = 6   #distil
-    if config.model_type.split('-')[-1] == 'base':
-        num_layers = 12
-    elif config.model_type == 'funnel-transformers-large':
-        num_layers = 26
-    elif config.model_type.split('-')[-1]=='large' or config.model_type == 'deberta-v2-xlarge':
-        num_layers = 24
-    elif  config.model_type == 'deberta-xlarge' or config.model_type == 'deberta-v2-xxlarge':
-        num_layers = 48
-    
+    num_layers = config.CONF.num_hidden_layers
 
     named_parameters = list(model.named_parameters()) 
     automodel_parameters = list(model.automodel.named_parameters())
@@ -195,7 +186,7 @@ def create_optimizer(model):
         lr = None
         layer_num = None
 
-        if config.model_type.split('-')[0] == 'bart':
+        if 'bart' in re.split('/|-', config.MODEL_CONFIG):
             found_layer_num_encoder = re.search('(?<=encoder\.layer).*', name)
             if found_layer_num_encoder:
                 found_a_number = re.search('(?<=\.)\d+(?=\.)',found_layer_num_encoder.group(0))#fix encoder.layernorm.weight bug
@@ -212,7 +203,8 @@ def create_optimizer(model):
                             layer_num = int(found_a_number.group(0)) + 12
                         else:
                             raise ValueError("Bart model has insufficient num_layers: %d (must be 12 or 24)" % num_layers)
-        elif config.model_type == 'funnel-transformers-large':
+        elif 'funnel' in re.split('/|-', config.MODEL_CONFIG) \
+            and 'transformer' in re.split('/|-', config.MODEL_CONFIG):
             found_block_encoder = re.search('(?<=encoder\.blocks).*', name)
             if found_block_encoder:
                 block_num, subblock_num = tuple([int(x) for x in re.findall('(?<=\.)\d+(?=\.)',found_block_encoder.group(0))])

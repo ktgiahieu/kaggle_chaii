@@ -86,106 +86,6 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
         
     return predictions
 
-def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, max_answer_char_length = 50):
-    all_start_logits, all_end_logits = raw_predictions
-    
-    example_id_to_index = {k: i for i, k in enumerate(examples["id"])}
-    features_per_example = collections.defaultdict(list)
-    for i, feature in enumerate(features):
-        features_per_example[example_id_to_index[feature["example_ids"]]].append(i)
-
-    predictions = collections.OrderedDict()
-
-    print(f"Post-processing {len(examples)} example predictions split into {len(features)} features.")
-
-    for example_index, example in examples.iterrows():
-        feature_indices = features_per_example[example_index]
-
-        min_null_score = None
-        valid_answers = []
-        
-        context = example["context"]
-
-        answer_start_sum_logits = np.zeros(len(context), dtype=np.float)
-        answer_end_sum_logits = np.zeros(len(context), dtype=np.float)
-
-        answer_start_num_logits = np.zeros(len(context), dtype=np.float)
-        answer_end_num_logits = np.zeros(len(context), dtype=np.float)
-
-        for feature_index in feature_indices:
-            start_logits = all_start_logits[feature_index]
-            end_logits = all_end_logits[feature_index]
-
-            sequence_ids = features[feature_index]["sequence_ids"]
-            context_index = 1
-
-            features[feature_index]["offsets"] = [
-                (o if sequence_ids[k] == context_index else None)
-                for k, o in enumerate(features[feature_index]["offsets"])
-            ]
-            offsets = features[feature_index]["offsets"]
-            cls_index = features[feature_index]["ids"].index(config.TOKENIZER.cls_token_id)
-
-            answer_start_sum_current_logit = np.zeros(len(context), dtype=np.float)
-            answer_end_sum_current_logit = np.zeros(len(context), dtype=np.float)
-            answer_start_num_current_logit = np.zeros(len(context), dtype=np.float)
-            answer_end_num_current_logit = np.zeros(len(context), dtype=np.float)
-
-            for start_index in range(len(start_logits)):
-                if offsets[start_index] is None:
-                    continue
-                start_char = offsets[start_index][0]
-
-                answer_start_sum_current_logit[start_char] = start_logits[start_index]
-                answer_start_num_current_logit[start_char] = 1
-
-            for end_index in range(len(end_logits)):
-                if offsets[end_index] is None:
-                    continue
-                end_char = offsets[end_index][1] - 1
-
-                answer_end_sum_current_logit[end_char] = end_logits[end_index]
-                answer_end_num_current_logit[end_char] = 1
-            
-            answer_start_sum_logits = answer_start_sum_logits + answer_start_sum_current_logit
-            answer_end_sum_logits = answer_end_sum_logits + answer_end_sum_current_logit
-            answer_start_num_logits = answer_start_num_logits + answer_start_num_current_logit
-            answer_end_num_logits = answer_end_num_logits + answer_end_num_current_logit
-
-
-        answer_start_sum_logits[answer_start_num_logits==0] = -np.inf         
-        answer_end_sum_logits[answer_end_num_logits==0] = -np.inf
-        answer_start_num_logits[answer_start_num_logits==0] = 1
-        answer_end_num_logits[answer_end_num_logits==0] = 1
-
-        answer_start_sum_logits = answer_start_sum_logits / answer_start_num_logits
-        answer_end_sum_logits = answer_end_sum_logits / answer_end_num_logits
-
-        best_start_chars = np.argsort(answer_start_sum_logits)[-1 : -n_best_size - 1 : -1].tolist()
-        best_end_chars = np.argsort(answer_end_sum_logits)[-1 : -n_best_size - 1 : -1].tolist()
-        for start_char in best_start_chars:
-            for end_char in best_end_chars:
-                # Don't consider answers with a length that is either < 0 or > max_answer_char_length.
-                if end_char <= start_char or end_char - start_char + 1 > max_answer_char_length:
-                    continue
-
-                valid_answers.append(
-                    {
-                        "score": answer_start_sum_logits[start_char] + answer_end_sum_logits[end_char],
-                        "text": context[start_char: end_char+1]
-                    }
-                )
-        
-        if len(valid_answers) > 0:
-            best_answer = sorted(valid_answers, key=lambda x: x["score"], reverse=True)[0]
-        else:
-            best_answer = {"text": "", "score": 0.0}
-        
-        predictions[example["id"]] = best_answer["text"]
-        
-        
-    return predictions
-
 def token_level_to_char_level(text, offsets, preds):
     probas_char = np.zeros(len(text))
     for i, offset in enumerate(offsets):
@@ -269,16 +169,7 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 def create_optimizer(model):
-    num_layers = 6   #distil
-    if config.model_type.split('-')[-1] == 'base':
-        num_layers = 12
-    elif config.model_type == 'funnel-transformers-large':
-        num_layers = 26
-    elif config.model_type.split('-')[-1]=='large' or config.model_type == 'deberta-v2-xlarge':
-        num_layers = 24
-    elif  config.model_type == 'deberta-xlarge' or config.model_type == 'deberta-v2-xxlarge':
-        num_layers = 48
-    
+    num_layers = config.CONF.num_hidden_layers
 
     named_parameters = list(model.named_parameters()) 
     automodel_parameters = list(model.automodel.named_parameters())
@@ -295,7 +186,7 @@ def create_optimizer(model):
         lr = None
         layer_num = None
 
-        if config.model_type.split('-')[0] == 'bart':
+        if 'bart' in re.split('/|-', config.MODEL_CONFIG):
             found_layer_num_encoder = re.search('(?<=encoder\.layer).*', name)
             if found_layer_num_encoder:
                 found_a_number = re.search('(?<=\.)\d+(?=\.)',found_layer_num_encoder.group(0))#fix encoder.layernorm.weight bug
@@ -312,7 +203,8 @@ def create_optimizer(model):
                             layer_num = int(found_a_number.group(0)) + 12
                         else:
                             raise ValueError("Bart model has insufficient num_layers: %d (must be 12 or 24)" % num_layers)
-        elif config.model_type == 'funnel-transformers-large':
+        elif 'funnel' in re.split('/|-', config.MODEL_CONFIG) \
+            and 'transformer' in re.split('/|-', config.MODEL_CONFIG):
             found_block_encoder = re.search('(?<=encoder\.blocks).*', name)
             if found_block_encoder:
                 block_num, subblock_num = tuple([int(x) for x in re.findall('(?<=\.)\d+(?=\.)',found_block_encoder.group(0))])

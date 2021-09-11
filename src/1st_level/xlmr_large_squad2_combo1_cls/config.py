@@ -7,7 +7,6 @@ import os
 is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 
 # Paths
-model_type = 'xlm-roberta-large'
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmr-large-squad2-baseline-classifier'
@@ -52,7 +51,9 @@ DOC_STRIDE = 128
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_CONFIG)
 
-HIDDEN_SIZE = 1024
+CONF = AutoConfig.from_pretrained(
+    MODEL_CONFIG)
+
 N_LAST_HIDDEN = 4
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5

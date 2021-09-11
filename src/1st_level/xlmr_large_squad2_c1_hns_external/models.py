@@ -11,9 +11,9 @@ class ChaiiModel(transformers.BertPreTrainedModel):
             config=conf)
 
         self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(config.HIDDEN_SIZE*2, config.HIDDEN_SIZE),
+            torch.nn.Linear(conf.hidden_size*2, conf.hidden_size),
             torch.nn.GELU(),
-            torch.nn.Linear(config.HIDDEN_SIZE, 2),
+            torch.nn.Linear(conf.hidden_size, 2),
         )
 
         self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
