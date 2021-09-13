@@ -13,7 +13,7 @@ import config
 import models
 import dataset
 import engine
-predicted_labels = []
+predicted_labels = {}
 
 def run(fold):
     dfx = pd.read_csv(config.TRAINING_FILE)
@@ -104,6 +104,8 @@ def run(fold):
     predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
     
+    predicted_labels.update(predictions)
+
     df_valid['PredictionString'] = df_valid['id'].map(predictions)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 

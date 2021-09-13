@@ -13,7 +13,7 @@ import config
 import models
 import dataset
 import engine
-predicted_labels = {}
+heatmap_logit = {}
 
 def run(fold):
     dfx = pd.read_csv(config.TRAINING_FILE)
@@ -93,45 +93,24 @@ def run(fold):
         tuple(x for x in predicted_labels_per_fold_start), dim=0)
     predicted_labels_per_fold_end = torch.cat(
         tuple(x for x in predicted_labels_per_fold_end), dim=0)
-    #Post process 
-    ## Baseline
-    #predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
-    #predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
-    #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
-    #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
-    
-    # Heatmap
-    predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
-                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
-    
-    predicted_labels.update(predictions)
 
-    df_valid['PredictionString'] = df_valid['id'].map(predictions)
-    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
-
-    print(f'Loss = {losses.avg}')
-    print(f'Jaccard = {eval_score}')
-    return eval_score
+    # Heatmap logit
+    heatmap_logit_per_fold = utils.postprocess_heatmap_logit(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    heatmap_logit.update(heatmap_logit_per_fold)
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     utils.seed_everything(seed=config.SEEDS[0])
-    fold_scores = []
     for i in range(config.N_FOLDS):
-        fold_score = run(i)
-        fold_scores.append(fold_score)
+        run(i)
         torch.cuda.empty_cache()
         gc.collect()
-
-    for i in range(config.N_FOLDS):
-        print(f'Fold={i}, Jaccard score = {fold_scores[i]}')
-    print(f'Mean = {np.mean(fold_scores)}')
-    print(f'Std = {np.std(fold_scores)}')
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predicted_labels, handle)
+        pickle.dump(heatmap_logit, handle)
