@@ -261,7 +261,7 @@ def postprocess_heatmap_logit(examples, features, raw_predictions, n_best_size =
         answer_start_sum_logits = answer_start_sum_logits / answer_start_num_logits
         answer_end_sum_logits = answer_end_sum_logits / answer_end_num_logits
 
-        heatmap_logit[example["id"]] = tuple(answer_start_sum_logits, answer_end_sum_logits)
+        heatmap_logit[example["id"]] = (answer_start_sum_logits, answer_end_sum_logits)
 
     return heatmap_logit
 

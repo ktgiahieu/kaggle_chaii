@@ -109,7 +109,7 @@ def run():
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
 
     # Heatmap 
-    heatmap_logit = utils.postprocess_heatmap_prob(df_test, test_dataset.features, 
+    heatmap_logit = utils.postprocess_heatmap_logit(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
