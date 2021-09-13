@@ -186,7 +186,7 @@ def postprocess_heatmap(examples, features, raw_predictions, n_best_size = 20, m
         
     return predictions
 
-def postprocess_heatmap_prob(examples, features, raw_predictions, n_best_size = 20, max_answer_char_length = 50):
+def postprocess_heatmap_logit(examples, features, raw_predictions, n_best_size = 20, max_answer_char_length = 50):
     all_start_logits, all_end_logits = raw_predictions
     
     example_id_to_index = {k: i for i, k in enumerate(examples["id"])}
@@ -194,7 +194,7 @@ def postprocess_heatmap_prob(examples, features, raw_predictions, n_best_size = 
     for i, feature in enumerate(features):
         features_per_example[example_id_to_index[feature["example_ids"]]].append(i)
 
-    heatmap_prob = collections.OrderedDict()
+    heatmap_logit = collections.OrderedDict()
 
     print(f"Post-processing {len(examples)} example predictions split into {len(features)} features.")
 
@@ -261,9 +261,9 @@ def postprocess_heatmap_prob(examples, features, raw_predictions, n_best_size = 
         answer_start_sum_logits = answer_start_sum_logits / answer_start_num_logits
         answer_end_sum_logits = answer_end_sum_logits / answer_end_num_logits
 
-        heatmap_prob[example["id"]] = tuple(answer_start_sum_logits, answer_end_sum_logits)
+        heatmap_logit[example["id"]] = tuple(answer_start_sum_logits, answer_end_sum_logits)
 
-    return heatmap_prob
+    return heatmap_logit
 
 def token_level_to_char_level(text, offsets, preds):
     probas_char = np.zeros(len(text))
