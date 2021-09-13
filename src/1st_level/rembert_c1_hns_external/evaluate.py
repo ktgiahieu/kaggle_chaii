@@ -28,9 +28,14 @@ def run(fold):
     for seed in config.SEEDS:
         model = models.ChaiiModel(conf=model_config)
         model.to(device)
-        model.load_state_dict(torch.load(
-            f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),
-            strict=False)
+        if config.is_kaggle:
+            if fold<=2:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+            else:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
+        else:
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+        model.load_state_dict(torch.load(model_path), strict=False)
         model.eval()
         seed_models.append(model)
 
