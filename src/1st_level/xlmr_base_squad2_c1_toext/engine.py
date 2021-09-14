@@ -17,12 +17,6 @@ def postprocess(pred):
     bad_starts = [".", ",", "(", ")", "-", "–",  ",", ";"]
     bad_endings = ["...", "-", "(", ")", "–", ",", ";"]
 
-    tamil_ad = "கி.பி"
-    tamil_bc = "கி.மு"
-    tamil_km = "கி.மீ"
-    hindi_ad = "ई"
-    hindi_bc = "ई.पू"
-
     if pred == "":
         return pred
     while any([pred.startswith(y) for y in bad_starts]):
@@ -32,9 +26,7 @@ def postprocess(pred):
             pred = pred[:-3]
         else:
             pred = pred[:-1]
-    
-    if any([pred.endswith(tamil_ad), pred.endswith(tamil_bc), pred.endswith(tamil_km), pred.endswith(hindi_ad), pred.endswith(hindi_bc)]) and pred+"." in context:
-        pred = pred+"."
+
     return pred
 
 def loss_fn(start_logits, end_logits,
