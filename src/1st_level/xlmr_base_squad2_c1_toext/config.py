@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [1000]
 N_FOLDS = 5
-EPOCHS = 20
+EPOCHS = 5
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
@@ -64,7 +64,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 200*ACCUMULATION_STEPS),
+                (10., 500*ACCUMULATION_STEPS),
                 ]
 
 

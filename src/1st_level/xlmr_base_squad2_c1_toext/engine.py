@@ -8,26 +8,42 @@ import gc
 import config
 import utils
 
+from string import punctuation
+
+def postprocess(pred):
+    pred = " ".join(pred.split())
+    pred = pred.strip(punctuation)
+
+    bad_starts = [".", ",", "(", ")", "-", "–",  ",", ";"]
+    bad_endings = ["...", "-", "(", ")", "–", ",", ";"]
+
+    tamil_ad = "கி.பி"
+    tamil_bc = "கி.மு"
+    tamil_km = "கி.மீ"
+    hindi_ad = "ई"
+    hindi_bc = "ई.पू"
+
+    if pred == "":
+        return pred
+    while any([pred.startswith(y) for y in bad_starts]):
+        pred = pred[1:]
+    while any([pred.endswith(y) for y in bad_endings]):
+        if pred.endswith("..."):
+            pred = pred[:-3]
+        else:
+            pred = pred[:-1]
+    
+    if any([pred.endswith(tamil_ad), pred.endswith(tamil_bc), pred.endswith(tamil_km), pred.endswith(hindi_ad), pred.endswith(hindi_bc)]) and pred+"." in context:
+        pred = pred+"."
+    return pred
 
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
-    #m = torch.nn.LogSoftmax(dim=1)
-    #loss_fct = torch.nn.KLDivLoss()
-    #start_loss = loss_fct(m(start_logits), start_positions)
-    #end_loss = loss_fct(m(end_logits), end_positions)
-    #total_loss = (start_loss + end_loss)
-    #return total_loss
-
-    start_labels = torch.argmax(start_positions, dim=1)
-    end_labels = torch.argmax(end_positions, dim=1)
-
-    ignored_index = start_logits.size(1)
-    start_labels = start_labels.clamp(0, ignored_index)
-    end_labels = end_labels.clamp(0, ignored_index)
-    loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
-    start_loss = loss_fct(start_logits, start_labels)
-    end_loss = loss_fct(end_logits, end_labels)
-    total_loss = (start_loss + end_loss) / 2
+    m = torch.nn.LogSoftmax(dim=1)
+    loss_fct = torch.nn.KLDivLoss()
+    start_loss = loss_fct(m(start_logits), start_positions)
+    end_loss = loss_fct(m(end_logits), end_positions)
+    total_loss = (start_loss + end_loss)
     return total_loss
 
 
@@ -156,12 +172,13 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
                                                    (predicted_labels_start, predicted_labels_end))  
 
 
-    df_valid['PredictionString'] = df_valid['id'].map(predictions)
+    df_valid['PredictionString'] = df_valid['id'].map(predictions).apply(postprocess)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
 
+    writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
     return eval_score
