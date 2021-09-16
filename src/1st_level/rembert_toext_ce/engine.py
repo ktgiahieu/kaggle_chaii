@@ -37,7 +37,7 @@ def loss_fn(start_logits, end_logits,
 
     start_labels = start_labels.clamp(0, ignored_index)
     end_labels = end_labels.clamp(0, ignored_index)
-    loss_fct = nn.CrossEntropyLoss(ignore_index=ignored_index)
+    loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
     start_loss = loss_fct(start_logits, start_labels)
     end_loss = loss_fct(end_logits, end_labels)
     total_loss = (start_loss + end_loss) / 2
