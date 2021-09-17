@@ -2,6 +2,7 @@ import os
 import random
 import re
 import collections
+from string import punctuation
 
 import torch
 import numpy as np
