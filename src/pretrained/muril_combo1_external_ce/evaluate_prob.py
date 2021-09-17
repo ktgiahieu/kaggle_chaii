@@ -130,7 +130,7 @@ if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     utils.seed_everything(seed=config.SEEDS[0])
     final_features = []
-    for i in range(config.N_FOLDS):
+    for i in range(5):
         all_features = run(i)
         final_features.extend(all_features)
         torch.cuda.empty_cache()
