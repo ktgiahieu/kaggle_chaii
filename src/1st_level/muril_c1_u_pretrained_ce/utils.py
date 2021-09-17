@@ -34,6 +34,12 @@ def reinit_last_layers(model, reinit_layers=4):
                 elif isinstance(module, torch.nn.LayerNorm):
                     module.bias.data.zero_()
                     module.weight.data.fill_(1.0)
+        encoder_temp = getattr(model, 'classifier')
+        for module in layer.modules():
+            if isinstance(module, torch.nn.Linear):
+                module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                if module.bias is not None:
+                    module.bias.data.zero_()
         print('Done reinitializing.!')
     return model
 
