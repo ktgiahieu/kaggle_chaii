@@ -35,6 +35,7 @@ def reinit_last_layers(model, reinit_layers=4):
                     module.bias.data.zero_()
                     module.weight.data.fill_(1.0)
         print('Done reinitializing.!')
+    return model
 
 def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size = 20, max_answer_length = 30):
     all_start_logits, all_end_logits = raw_predictions
