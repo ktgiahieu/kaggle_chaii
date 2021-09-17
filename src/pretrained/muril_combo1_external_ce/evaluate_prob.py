@@ -116,7 +116,7 @@ def run(fold):
 
     print(f'Loss = {losses.avg}')
     positive_rate = (TP+FP)/(TP+TN+FP+FN)
-    print(f'Val positive_rate {iteration}= {positive_rate}')
+    print(f'Val positive_rate = {positive_rate}')
     accuracy = (TP+TN)/(TP+TN+FP+FN)
     print(f'Val accuracy = {accuracy}')
     recall = TP/(TP+FN)
