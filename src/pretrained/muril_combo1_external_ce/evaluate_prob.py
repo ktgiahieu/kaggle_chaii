@@ -92,7 +92,7 @@ def run(fold):
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs = m(outputs.squeeze(-1)).cpu().detach().numpy() # 0 - 1
+            outputs = outputs.squeeze(-1).cpu().detach().numpy() # 0 - 1
 
             true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
             predicted_labels.extend(outputs.tolist())
