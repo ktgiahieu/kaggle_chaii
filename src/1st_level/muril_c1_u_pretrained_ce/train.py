@@ -60,7 +60,7 @@ def run(fold, seed):
 
     model.load_state_dict(torch.load(config.PRETRAINED_MODEL_PATH, map_location="cuda"))
 
-    model = utils.reinit_last_layers(model, reinit_layers=12)
+    model = utils.reinit_last_layers(model, reinit_layers=config.N_REINIT_LAST_LAYERS)
 
     num_train_steps = int(
         len(df_train) / config.TRAIN_BATCH_SIZE * config.EPOCHS)
