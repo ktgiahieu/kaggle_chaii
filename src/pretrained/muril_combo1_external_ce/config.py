@@ -12,6 +12,7 @@ my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-muril-combo1-external-ce'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/external.csv'
+    VALID_FILE = f'../input/{my_impl}/data/train_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -25,6 +26,7 @@ else: #colab
     model_save = 'muril_combo1_external_ce'
     
     TRAINING_FILE = f'/content/{repo_name}/data/external.csv'
+    VALID_FILE = f'/content/{repo_name}/data/train_cleaned.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}'
@@ -61,7 +63,7 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
                 (10., 200*ACCUMULATION_STEPS),
                 ]

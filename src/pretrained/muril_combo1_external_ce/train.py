@@ -15,10 +15,8 @@ import utils
 
 
 def run(seed):
-    dfx = pd.read_csv(config.TRAINING_FILE)
-    
-    df_train = dfx
-    df_valid = dfx
+    df_train = pd.read_csv(config.TRAINING_FILE)
+    df_valid = pd.read_csv(config.VALID_FILE)
 
     train_dataset = dataset.ChaiiDataset(
         ids=df_train.id.values,
