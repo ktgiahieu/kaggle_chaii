@@ -11,11 +11,16 @@ import utils
 
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
-    m = torch.nn.LogSoftmax(dim=1)
-    loss_fct = torch.nn.KLDivLoss()
-    start_loss = loss_fct(m(start_logits), start_positions)
-    end_loss = loss_fct(m(end_logits), end_positions)
-    total_loss = (start_loss + end_loss)
+    ignored_index = start_logits.size(1)
+    start_labels = torch.argmax(start_positions, dim=1)
+    end_labels = torch.argmax(end_positions, dim=1)
+
+    start_labels = start_labels.clamp(0, ignored_index)
+    end_labels = end_labels.clamp(0, ignored_index)
+    loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
+    start_loss = loss_fct(start_logits, start_labels)
+    end_loss = loss_fct(end_logits, end_labels)
+    total_loss = (start_loss + end_loss) / 2
     return total_loss
 
 
