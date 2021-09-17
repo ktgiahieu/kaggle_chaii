@@ -71,7 +71,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 5e-4
+HEAD_LEARNING_RATE = 1e-3
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [2e-5, 5e-5]
+LEARNING_RATES_RANGE = [4e-5, 8e-5]
 WEIGHT_DECAY = 0.01
