@@ -20,7 +20,7 @@ def seed_everything(seed):
 def reinit_last_layers(model, reinit_layers=4):
     if reinit_layers > 0:
         print(f'Reinitializing Last {reinit_layers} Layers ...')
-        encoder_temp = getattr(model, automodel)
+        encoder_temp = getattr(model, 'automodel')
         for layer in encoder_temp.encoder.layer[-reinit_layers:]:
             for module in layer.modules():
                 if isinstance(module, torch.nn.Linear):
