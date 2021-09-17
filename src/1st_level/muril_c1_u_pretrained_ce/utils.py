@@ -17,6 +17,25 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
 
+def reinit_last_layers(model, reinit_layers=4):
+    if reinit_layers > 0:
+        print(f'Reinitializing Last {reinit_layers} Layers ...')
+        encoder_temp = getattr(model, config.CONF.model_type)
+        for layer in encoder_temp.encoder.layer[-reinit_layers:]:
+            for module in layer.modules():
+                if isinstance(module, torch.nn.Linear):
+                    module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                    if module.bias is not None:
+                        module.bias.data.zero_()
+                elif isinstance(module, torch.nn.Embedding):
+                    module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                    if module.padding_idx is not None:
+                        module.weight.data[module.padding_idx].zero_()
+                elif isinstance(module, torch.nn.LayerNorm):
+                    module.bias.data.zero_()
+                    module.weight.data.fill_(1.0)
+        print('Done reinitializing.!')
+
 def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size = 20, max_answer_length = 30):
     all_start_logits, all_end_logits = raw_predictions
     

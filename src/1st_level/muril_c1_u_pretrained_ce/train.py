@@ -60,6 +60,8 @@ def run(fold, seed):
 
     model.load_state_dict(torch.load(config.PRETRAINED_MODEL_PATH, map_location="cuda"))
 
+    utils.reinit_last_layers(model, reinit_layers=4)
+
     num_train_steps = int(
         len(df_train) / config.TRAIN_BATCH_SIZE * config.EPOCHS)
     param_optimizer = list(model.named_parameters())
