@@ -69,7 +69,7 @@ def run(fold):
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
-            classifier_labels = torch.any(start_labels,1)
+            classifier_labels = start_labels[:,0] == 0
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
