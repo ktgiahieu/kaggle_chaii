@@ -17,6 +17,25 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
 
+def postprocess(pred):
+    pred = " ".join(pred.split())
+    pred = pred.strip(punctuation)
+
+    bad_starts = [".", ",", "(", ")", "-", "–",  ",", ";"]
+    bad_endings = ["...", "-", "(", ")", "–", ",", ";"]
+
+    if pred == "":
+        return pred
+    while any([pred.startswith(y) for y in bad_starts]):
+        pred = pred[1:]
+    while any([pred.endswith(y) for y in bad_endings]):
+        if pred.endswith("..."):
+            pred = pred[:-3]
+        else:
+            pred = pred[:-1]
+
+    return pred
+
 def reinit_last_layers(model, reinit_layers=4):
     if reinit_layers > 0:
         print(f'Reinitializing Last {reinit_layers} Layers ...')

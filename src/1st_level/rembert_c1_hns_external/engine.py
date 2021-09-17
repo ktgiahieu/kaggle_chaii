@@ -8,7 +8,6 @@ import gc
 import config
 import utils
 
-
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     m = torch.nn.LogSoftmax(dim=1)
@@ -144,7 +143,7 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
                                                    (predicted_labels_start, predicted_labels_end))  
 
 
-    df_valid['PredictionString'] = df_valid['id'].map(predictions)
+    df_valid['PredictionString'] = df_valid['id'].map(predictions).apply(utils.postprocess)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
 
     

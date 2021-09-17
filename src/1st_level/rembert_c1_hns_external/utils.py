@@ -17,6 +17,51 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
 
+def postprocess(pred):
+    pred = " ".join(pred.split())
+    pred = pred.strip(punctuation)
+
+    bad_starts = [".", ",", "(", ")", "-", "–",  ",", ";"]
+    bad_endings = ["...", "-", "(", ")", "–", ",", ";"]
+
+    if pred == "":
+        return pred
+    while any([pred.startswith(y) for y in bad_starts]):
+        pred = pred[1:]
+    while any([pred.endswith(y) for y in bad_endings]):
+        if pred.endswith("..."):
+            pred = pred[:-3]
+        else:
+            pred = pred[:-1]
+
+    return pred
+
+def reinit_last_layers(model, reinit_layers=4):
+    if reinit_layers > 0:
+        print(f'Reinitializing Last {reinit_layers} Layers ...')
+        encoder_temp = getattr(model, 'automodel')
+        for layer in encoder_temp.encoder.layer[-reinit_layers:]:
+            for module in layer.modules():
+                if isinstance(module, torch.nn.Linear):
+                    module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                    if module.bias is not None:
+                        module.bias.data.zero_()
+                elif isinstance(module, torch.nn.Embedding):
+                    module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                    if module.padding_idx is not None:
+                        module.weight.data[module.padding_idx].zero_()
+                elif isinstance(module, torch.nn.LayerNorm):
+                    module.bias.data.zero_()
+                    module.weight.data.fill_(1.0)
+        encoder_temp = getattr(model, 'classifier')
+        for module in layer.modules():
+            if isinstance(module, torch.nn.Linear):
+                module.weight.data.normal_(mean=0.0, std=config.CONF.initializer_range)
+                if module.bias is not None:
+                    module.bias.data.zero_()
+        print('Done reinitializing.!')
+    return model
+
 def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size = 20, max_answer_length = 30):
     all_start_logits, all_end_logits = raw_predictions
     
