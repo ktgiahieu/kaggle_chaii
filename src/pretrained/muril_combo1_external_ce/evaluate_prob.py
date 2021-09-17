@@ -15,11 +15,11 @@ import config
 import models
 import dataset
 import engine
-true_labels = []
-predicted_labels = []
+
 
 def run(fold):
-    dfx = pd.read_csv(config.TRAINING_FILE)
+
+    dfx = pd.read_csv(config.VALID_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     device = torch.device('cuda')
@@ -31,14 +31,9 @@ def run(fold):
     for seed in config.SEEDS:
         model = models.ChaiiClassifierModel(conf=model_config)
         model.to(device)
-        if config.is_kaggle:
-            if fold<=2:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
-            else:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
-        else:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
-        model.load_state_dict(torch.load(model_path), strict=False)
+        model.load_state_dict(torch.load(
+            f'{config.TRAINED_MODEL_PATH}/model.bin'),
+            strict=False)
         model.eval()
         seed_models.append(model)
 
@@ -58,11 +53,14 @@ def run(fold):
 
     
     losses = utils.AverageMeter()
-    predicted_labels_per_fold = []
+    true_labels = []
+    predicted_labels = []
+
     TP = 0
     TN = 0
     FP = 0
     FN = 0
+
     m = torch.nn.Sigmoid()
     with torch.no_grad():
       
@@ -70,16 +68,20 @@ def run(fold):
         for bi, d in enumerate(tk0):
             ids = d['ids']
             mask = d['mask']
-            classifier_labels = d['classifier_labels']
+            start_labels = d['start_labels']
+            end_labels = d['end_labels']
+            classifier_labels = torch.any(start_labels,1)
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
+            start_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = start_labels.to(device, dtype=torch.float)
             classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             outputs_seeds = []
             for i in range(len(config.SEEDS)):
-                outputs = seed_models[i](ids=ids, mask=mask)
-
+                outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
+                outputs = (torch.softmax(outputs_start,dim=1)[:,0] + torch.softmax(outputs_end,dim=1)[:,0])/2
                 outputs_seeds.append(outputs)
 
             outputs = sum(outputs_seeds) / (len(config.SEEDS))
@@ -89,7 +91,12 @@ def run(fold):
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs = (m(outputs.squeeze(-1)) > config.CLASSIFIER_THRESHOLD).cpu().detach().numpy() # 0 or 1
+            outputs = m(outputs.squeeze(-1)).cpu().detach().numpy() # 0 - 1
+
+            true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
+            predicted_labels.extend(outputs.tolist())
+
+            outputs = outputs > config.CLASSIFIER_THRESHOLD
             tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
                                               outputs, labels=[0, 1]).ravel()
 
@@ -101,39 +108,37 @@ def run(fold):
             true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
             predicted_labels.extend(outputs.tolist())
     
+    all_features = valid_dataset.features
+    for i,feature in enumerate(all_features):
+        feature['true_labels'] = true_labels[i]
+        feature['predicted_labels'] = predicted_labels[i]
+        feature['kfold'] = fold
+        all_features[i] = feature
+
     print(f'Loss = {losses.avg}')
+    positive_rate = (TP+FP)/(TP+TN+FP+FN)
+    print(f'Val positive_rate {iteration}= {positive_rate}')
     accuracy = (TP+TN)/(TP+TN+FP+FN)
     print(f'Val accuracy = {accuracy}')
     recall = TP/(TP+FN)
     print(f'Val recall = {recall}')
 
-    return recall
+    return all_features
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     utils.seed_everything(seed=config.SEEDS[0])
-    fold_scores = []
+    final_features = []
     for i in range(config.N_FOLDS):
-        fold_score = run(i)
-        fold_scores.append(fold_score)
+        all_features = run(i)
+        final_features.extend(all_features)
         torch.cuda.empty_cache()
         gc.collect()
-
-    for i in range(config.N_FOLDS):
-        print(f'Fold={i}, Recall = {fold_scores[i]}')
-    print(f'Mean = {np.mean(fold_scores)}')
-    print(f'Std = {np.std(fold_scores)}')
-
-    tn, fp, fn, tp = confusion_matrix(true_labels, predicted_labels, labels=[0, 1]).ravel()
-    oof_accuracy = (tp+tn)/(tp+tn+fp+fn)
-    print(f'OOF accuracy = {oof_accuracy}')
-    oof_recall = tp/(tp+fn)
-    print(f'OOF recall = {oof_recall}')
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predicted_labels, handle)
+        pickle.dump(final_features, handle)

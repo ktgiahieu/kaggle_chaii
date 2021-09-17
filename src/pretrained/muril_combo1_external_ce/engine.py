@@ -50,6 +50,11 @@ def loss_fn(start_logits, end_logits,
     #total_loss = (start_loss + end_loss)
     #return total_loss
 
+def classifier_loss_fn(logits, labels):
+    m = torch.nn.Sigmoid()
+    loss_fct = torch.nn.BCELoss()
+    loss = loss_fct(m(logits), labels)
+    return loss
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
