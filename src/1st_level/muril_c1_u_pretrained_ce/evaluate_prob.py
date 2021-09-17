@@ -32,7 +32,7 @@ def run(fold):
         model = models.ChaiiModel(conf=model_config)
         model.to(device)
         model.load_state_dict(torch.load(
-            f'{config.TRAINED_MODEL_PATH}/model.bin'),
+            f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),
             strict=False)
         model.eval()
         seed_models.append(model)
