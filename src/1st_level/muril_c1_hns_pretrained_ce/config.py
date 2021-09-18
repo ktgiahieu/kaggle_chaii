@@ -38,7 +38,7 @@ else: #colab
 # Model params
 SEEDS = [1000]
 N_FOLDS = 5
-EPOCHS = 3
+EPOCHS = 2
 NEGATIVE_POSITIVE_RATIO = 2.0
 
 PATIENCE = None
@@ -68,12 +68,12 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 60*ACCUMULATION_STEPS),
+                (10., 40*ACCUMULATION_STEPS),
                 ]
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 5e-4
+HEAD_LEARNING_RATE = 1e-3
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
 LEARNING_RATES_RANGE = [1e-5, 5e-5]
 WEIGHT_DECAY = 0.01
