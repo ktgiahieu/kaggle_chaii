@@ -26,7 +26,7 @@ def hard_negative_sampling(hns_features):
     current_document_features = []
     for i in range(len(hns_features)):
         feature = hns_features[i]
-        if feature['classifier_labels'] == [1]:
+        if feature['start_labels'][0] == 0:
             sampled_features.append(feature)
             continue
         if len(current_document_features)==0:
