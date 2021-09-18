@@ -70,10 +70,12 @@ def run(seed):
         swa_start=int(num_train_steps * config.SWA_RATIO),
         swa_freq=config.SWA_FREQ,
         swa_lr=None)
-    scheduler = transformers.get_linear_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
-        num_training_steps=num_train_steps)
+    #scheduler = transformers.get_linear_schedule_with_warmup(
+    #    optimizer=optimizer,
+    #    num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
+    #    num_training_steps=num_train_steps)
+    scheduler = transformers.get_constant_schedule(
+        optimizer=optimizer)
 
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')

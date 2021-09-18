@@ -37,7 +37,7 @@ else: #colab
 
 # Model params
 SEEDS = [1000]
-EPOCHS = 5
+EPOCHS = 10
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
@@ -54,7 +54,7 @@ CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
 N_LAST_HIDDEN = 4
-BERT_DROPOUT = 0.1
+BERT_DROPOUT = 0
 HIGH_DROPOUT = 0.5
 SOFT_ALPHA = 1.0
 WARMUP_RATIO = 0.1

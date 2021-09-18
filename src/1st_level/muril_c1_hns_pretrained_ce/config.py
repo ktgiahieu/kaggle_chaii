@@ -68,17 +68,12 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (0.62, 60*ACCUMULATION_STEPS),
-                (0.65, 40*ACCUMULATION_STEPS),
-                (0.675, 20*ACCUMULATION_STEPS),
-                (0.7, 10*ACCUMULATION_STEPS),
-                (0.71, 5*ACCUMULATION_STEPS),
-                (1., 2*ACCUMULATION_STEPS),
+                (10., 60*ACCUMULATION_STEPS),
                 ]
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 1e-3
+HEAD_LEARNING_RATE = 1e-4
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
 LEARNING_RATES_RANGE = [1e-5, 5e-5]
 WEIGHT_DECAY = 0.01
