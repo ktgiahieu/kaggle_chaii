@@ -12,7 +12,7 @@ my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmr-large-squad2-c1-external-ce'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/external.csv'
-    VALID_FILE = f'../input/{my_impl}/data/train_cleaned.csv'
+    VALID_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -26,7 +26,7 @@ else: #colab
     model_save = 'xlmr_large_squad2_c1_external_ce'
     
     TRAINING_FILE = f'/content/{repo_name}/data/external.csv'
-    VALID_FILE = f'/content/{repo_name}/data/train_cleaned.csv'
+    VALID_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}'
