@@ -25,7 +25,7 @@ else: #colab
     model_save = 'muril_c1_hns_pretrained_ce'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/muril_c1_u_pretrained_ce.pkl'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/muril_combo1_external_ce.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/muril_combo1_external_ce/model.bin'
