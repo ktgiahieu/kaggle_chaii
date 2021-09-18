@@ -22,31 +22,31 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'muril_c1_hns_pretrained_ce'
+    model_save = 'xlmrls2_c1_hns_pretrained_ce'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/muril_c1_u_pretrained_ce.pkl'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/xlmrls2_c1_u_pretrained_ce.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/muril_combo1_external_ce/model.bin'
+    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/xlmr_large_squad2_c1_external_ce/model.bin'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'google/muril-base-cased'
+    MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
 
 # Model params
 SEEDS = [1000]
 N_FOLDS = 5
 EPOCHS = 3
-NEGATIVE_POSITIVE_RATIO = 1.0
+NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
 N_REINIT_LAST_LAYERS = 0
-TRAIN_BATCH_SIZE = 16
-VALID_BATCH_SIZE = 16
-ACCUMULATION_STEPS = 1
+TRAIN_BATCH_SIZE = 2
+VALID_BATCH_SIZE = 2
+ACCUMULATION_STEPS = 8
 MAX_LEN = 384
 DOC_STRIDE = 128
 
@@ -73,7 +73,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 5e-4
+HEAD_LEARNING_RATE = 2e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [5e-5, 1e-4]
+LEARNING_RATES_RANGE = [7e-6, 1e-5]
 WEIGHT_DECAY = 0.01
