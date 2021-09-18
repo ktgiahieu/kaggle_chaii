@@ -81,12 +81,13 @@ def run(fold):
             outputs_seeds = []
             for i in range(len(config.SEEDS)):
                 outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
+                print(torch.sort(outputs_start))
+                print(torch.sort(outputs_end))
                 outputs = 1 - (torch.softmax(outputs_start[:,:-1],dim=1)[:,0] + torch.softmax(outputs_end[:,:-1],dim=1)[:,0])/2
+                print(outputs)
                 outputs_seeds.append(outputs)
 
             outputs = sum(outputs_seeds) / (len(config.SEEDS))
-
-            print(outputs)
             
             loss = engine.classifier_loss_fn(outputs, classifier_labels)
 
