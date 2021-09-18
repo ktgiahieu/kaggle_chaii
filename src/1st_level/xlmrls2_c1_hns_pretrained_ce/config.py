@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-muril-c1-hns-pretrained-ce'
+my_model_dataset = 'chaii-xlmrls2-c1-hns-pretrained-ce'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -18,7 +18,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/google-muril-base-cased'
+    MODEL_CONFIG = '../input/deepset-xlm-roberta-large-squad2'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
