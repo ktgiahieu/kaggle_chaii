@@ -25,7 +25,7 @@ else: #colab
     model_save = 'muril_c1_hns_pretrained_ce'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/muril_combo1_external_ce.pkl'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/muril_c1_u_pretrained_ce.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/muril_combo1_external_ce/model.bin'
@@ -39,7 +39,7 @@ else: #colab
 SEEDS = [1000]
 N_FOLDS = 5
 EPOCHS = 3
-NEGATIVE_POSITIVE_RATIO = 1.0
+NEGATIVE_POSITIVE_RATIO = 2.0
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
@@ -57,7 +57,7 @@ CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
 N_LAST_HIDDEN = 4
-BERT_DROPOUT = 0.1
+BERT_DROPOUT = 0
 HIGH_DROPOUT = 0.5
 SOFT_ALPHA = 1.0
 WARMUP_RATIO = 0.1
@@ -75,5 +75,5 @@ EVAL_SCHEDULE = [
 #Layer wise learning rate
 HEAD_LEARNING_RATE = 1e-3
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [3e-5, 7e-5]
+LEARNING_RATES_RANGE = [1e-5, 3e-5]
 WEIGHT_DECAY = 0.01
