@@ -195,8 +195,9 @@ class ChaiiDataset:
                                                  dtype=torch.float),
                     'end_labels': torch.tensor(data['end_labels'],
                                                dtype=torch.float),
-                    'classifier_labels':torch.tensor(data['classifier_labels'],
-                                               dtype=torch.float),}
+                    #'classifier_labels':torch.tensor(data['classifier_labels'],
+                    #                           dtype=torch.float),
+                    }
         else: #valid
             data = self.features[item]
             
