@@ -19,7 +19,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/ai4bharat-indic-bert '
+    MODEL_CONFIG = '../input/ai4bharat-indic-bert'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
@@ -33,7 +33,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'ai4bharat/indic-bert '
+    MODEL_CONFIG = 'ai4bharat/indic-bert'
 
 # Model params
 SEEDS = [1000]
