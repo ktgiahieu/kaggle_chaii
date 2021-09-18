@@ -96,7 +96,7 @@ def run(fold):
             true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
             predicted_labels.extend(outputs.tolist())
 
-            outputs = outputs > 0.5
+            outputs = outputs > 0.75
             tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
                                               outputs, labels=[0, 1]).ravel()
 
