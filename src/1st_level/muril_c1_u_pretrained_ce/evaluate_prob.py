@@ -91,22 +91,24 @@ def run(fold):
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            outputs = outputs.squeeze(-1).cpu().detach().numpy() # 0 - 1
+            if len(outputs.size()) > 1:
+                outputs = outputs.squeeze(-1)
+            outputs = outputs.cpu().detach().numpy() # 0 - 1
 
-            true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
+            if len(classifier_labels.size()) > 1:
+                classifier_labels = classifier_labels.squeeze(-1)
+            classifier_labels = classifier_labels.cpu().detach().numpy()
+            
+            true_labels.extend(classifier_labels.tolist())
             predicted_labels.extend(outputs.tolist())
 
             outputs = outputs > 0.5
-            tn, fp, fn, tp = confusion_matrix(classifier_labels.squeeze(-1).cpu().detach().numpy(), 
-                                              outputs, labels=[0, 1]).ravel()
+            tn, fp, fn, tp = confusion_matrix(classifier_labels, outputs, labels=[0, 1]).ravel()
 
             TP += tp
             TN += tn
             FP += fp
             FN += fn
-
-            true_labels.extend(classifier_labels.squeeze(-1).cpu().detach().numpy().tolist())
-            predicted_labels.extend(outputs.tolist())
     
     all_features = valid_dataset.features
     for i,feature in enumerate(all_features):
