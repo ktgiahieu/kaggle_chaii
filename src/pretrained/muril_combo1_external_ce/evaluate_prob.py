@@ -19,7 +19,7 @@ import engine
 
 def run(fold):
 
-    dfx = pd.read_csv(config.VALID_FILE)
+    dfx = pd.read_csv(config.TRAINING_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     device = torch.device('cuda')
@@ -32,7 +32,7 @@ def run(fold):
         model = models.ChaiiModel(conf=model_config)
         model.to(device)
         model.load_state_dict(torch.load(
-            f'{config.TRAINED_MODEL_PATH}/model.bin'),
+            f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),
             strict=False)
         model.eval()
         seed_models.append(model)
@@ -42,7 +42,8 @@ def run(fold):
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values)
+        answer_starts=df_valid.answer_start.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
