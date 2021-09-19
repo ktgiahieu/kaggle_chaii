@@ -53,8 +53,8 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = 4
-BERT_DROPOUT = 0
+N_LAST_HIDDEN = 12
+BERT_DROPOUT = 0.1
 HIGH_DROPOUT = 0.5
 SOFT_ALPHA = 1.0
 WARMUP_RATIO = 0.1
@@ -63,7 +63,7 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
                 (10., 200*ACCUMULATION_STEPS),
                 ]
@@ -72,5 +72,5 @@ EVAL_SCHEDULE = [
 #Layer wise learning rate
 HEAD_LEARNING_RATE = 5e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [2e-5, 2e-5]
-WEIGHT_DECAY = 0.01
+LEARNING_RATES_RANGE = [5e-5, 5e-5]
+WEIGHT_DECAY = 0.001
