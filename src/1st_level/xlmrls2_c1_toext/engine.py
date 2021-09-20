@@ -41,6 +41,9 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
         for bi, d in enumerate(tk0):
+            if bi < 2570:
+                tk0.set_postfix(loss=0)
+                continue
             torch.cuda.empty_cache()
             gc.collect()
 
