@@ -17,7 +17,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         #)
 
         #self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
-        self.classifier = torch.nn.Linear(config.HIDDEN_SIZE, 2)
+        self.classifier = torch.nn.Linear(conf.hidden_size, 2)
         if isinstance(self.classifier, torch.nn.Linear):
             self.classifier.weight.data.normal_(mean=0.0, std=conf.initializer_range)
             if self.classifier.bias is not None:
