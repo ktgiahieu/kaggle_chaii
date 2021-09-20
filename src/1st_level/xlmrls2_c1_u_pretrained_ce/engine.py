@@ -8,6 +8,8 @@ import gc
 import config
 import utils
 
+from string import punctuation
+
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     ignored_index = start_logits.size(1)
@@ -27,8 +29,6 @@ def classifier_loss_fn(logits, labels):
     loss_fct = torch.nn.BCELoss()
     loss = loss_fct(m(logits), labels)
     return loss
-
-
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
@@ -102,6 +102,8 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
+            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
+            print(f"val_score: {val_score:0.4}")
             torch.save(model.state_dict(), f'./{model_path_filename}')
         if not config.is_kaggle: #colab
             copyfile(f'./{model_path_filename}', model_path)
@@ -162,5 +164,6 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
 
+    writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
     return eval_score

@@ -91,6 +91,8 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 print(f"Still best_val_score: {best_val_score:0.4}",
                         f"(from epoch {best_epoch})") 
         if config.SAVE_CHECKPOINT_TYPE == 'last_epoch':
+            val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
+            print(f"val_score: {val_score:0.4}")
             torch.save(model.state_dict(), f'./{model_path_filename}')
         if not config.is_kaggle: #colab
             copyfile(f'./{model_path_filename}', model_path)
