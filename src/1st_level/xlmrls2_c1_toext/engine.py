@@ -41,12 +41,6 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
         for bi, d in enumerate(tk0):
-            if bi < 2570:
-                tk0.set_postfix(loss=0)
-                continue
-            torch.cuda.empty_cache()
-            gc.collect()
-
             ids = d['ids']
             mask = d['mask']
             start_labels = d['start_labels']
@@ -56,6 +50,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = end_labels.to(device, dtype=torch.float)
+
+            if bi < 2570:
+                tk0.set_postfix(loss=0)
+                continue
 
             model.train()
             
@@ -92,6 +90,11 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                             print(f"Still best_val_score: {best_val_score:0.4}",
                                     f"(from epoch {best_epoch})")                                    
             step += 1
+
+            #del ids, mask, start_labels, end_labels
+
+            #torch.cuda.empty_cache()
+            #gc.collect()
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch' or config.SAVE_CHECKPOINT_TYPE == 'best_iter':
