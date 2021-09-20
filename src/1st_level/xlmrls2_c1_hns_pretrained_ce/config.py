@@ -11,7 +11,7 @@ comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmrls2-c1-hns-pretrained-ce'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -24,7 +24,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'xlmrls2_c1_hns_pretrained_ce'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned_dropped.csv'
     TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/xlmrls2_c1_u_pretrained_ce.pkl'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
