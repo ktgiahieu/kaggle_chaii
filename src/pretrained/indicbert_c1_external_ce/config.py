@@ -19,7 +19,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/ai4bharat-indic-bert'
+    MODEL_CONFIG = '../input/indic-bert-squad2'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
@@ -33,7 +33,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/{model_save}_old'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'ai4bharat/indic-bert'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/indic-bert-squad2'
 
 # Model params
 SEEDS = [1000]
@@ -70,7 +70,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 1e-4
+HEAD_LEARNING_RATE = 3e-4
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [3e-5, 3e-5]
+LEARNING_RATES_RANGE = [3e-4, 3e-4]
 WEIGHT_DECAY = 0.001
