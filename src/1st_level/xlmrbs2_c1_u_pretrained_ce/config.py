@@ -11,7 +11,7 @@ comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-xlmrbs2-c1-u-pretrained-ce'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -24,7 +24,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'xlmrbs2_c1_u_pretrained_ce'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/xlmrbs2_c1_external_ce/model.bin'
@@ -72,7 +72,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 5e-4
+HEAD_LEARNING_RATE = 3e-4
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [5e-5, 1e-4]
+LEARNING_RATES_RANGE = [3e-4, 3e-4]
 WEIGHT_DECAY = 0.01
