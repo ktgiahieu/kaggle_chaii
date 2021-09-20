@@ -19,6 +19,8 @@ def run():
     df_test = pd.read_csv(config.TEST_FILE)
     df_test.loc[:, 'answer_start'] = 0
     df_test.loc[:, 'answer_text'] = ''
+    df_test['context'] = df_test['context'].apply(lambda x: ' '.join(x.split()))
+    df_test['question'] = df_test['question'].apply(lambda x: ' '.join(x.split()))
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
