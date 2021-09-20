@@ -19,7 +19,7 @@ import engine
 
 def run(fold):
 
-    dfx = pd.read_csv(config.PROB_VALID_FILE)
+    dfx = pd.read_csv(config.TRAINING_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     device = torch.device('cuda')
