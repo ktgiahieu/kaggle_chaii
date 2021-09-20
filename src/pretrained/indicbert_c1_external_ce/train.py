@@ -53,6 +53,8 @@ def run(seed):
     model = models.ChaiiModel(conf=model_config)
     model = model.to(device)
 
+    model.load_state_dict(torch.load(f"{config.TRAINED_MODEL_PATH}/model.bin", map_location="cuda"))
+
     num_train_steps = int(
         len(df_train) / config.TRAIN_BATCH_SIZE * config.EPOCHS)
     param_optimizer = list(model.named_parameters())
