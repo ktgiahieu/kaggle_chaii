@@ -51,10 +51,6 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = end_labels.to(device, dtype=torch.float)
 
-            if bi < 2570:
-                tk0.set_postfix(loss=0)
-                continue
-
             model.train()
             
             outputs_start, outputs_end = model(ids=ids, mask=mask)
@@ -91,10 +87,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                                     f"(from epoch {best_epoch})")                                    
             step += 1
 
-            #del ids, mask, start_labels, end_labels
+            del ids, mask, start_labels, end_labels
 
-            #torch.cuda.empty_cache()
-            #gc.collect()
+            torch.cuda.empty_cache()
+            gc.collect()
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
         if config.SAVE_CHECKPOINT_TYPE == 'best_epoch' or config.SAVE_CHECKPOINT_TYPE == 'best_iter':
