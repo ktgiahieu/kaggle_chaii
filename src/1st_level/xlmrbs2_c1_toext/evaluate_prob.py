@@ -85,6 +85,8 @@ def run(fold):
                 outputs_seeds.append(outputs)
 
             outputs = sum(outputs_seeds) / (len(config.SEEDS))
+
+            print(outputs)
             
             loss = engine.classifier_loss_fn(outputs, classifier_labels)
 
