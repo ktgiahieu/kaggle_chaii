@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-muril-c1-toext-diff'
+my_model_dataset = 'chaii-xlmrbs2-c1-toext-diff'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -18,11 +18,11 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/google-muril-base-cased-squad2'
+    MODEL_CONFIG = '../input/deepset-xlm-roberta-base-squad2'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'muril_c1_toext_diff'
+    model_save = 'xlmrbs2_c1_toext_diff'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -31,10 +31,10 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-base-cased-squad2'
+    MODEL_CONFIG = 'deepset/xlm-roberta-base-squad2'
 
 # Model params
-SEEDS = [13, 26, 43, 1001, 2022]
+SEEDS = [14, 27, 44, 1002, 2023]
 N_FOLDS = 5
 EPOCHS = 3
 #NEGATIVE_POSITIVE_RATIO = 3.0
@@ -54,10 +54,10 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [10,4,12,8,6]
+N_LAST_HIDDEN = [10,  6, 12,  8,  4]
 BERT_DROPOUT = 0.1
-HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
-SOFT_ALPHA = [0.6, 1.0, 0.9, 0.8, 0.7]
+HIGH_DROPOUT = [0.5 , 0.35, 0.3 , 0.45, 0.4 ]
+SOFT_ALPHA = [0.8, 0.7, 1. , 0.6, 0.9]
 WARMUP_RATIO = 0.1
 
 USE_SWA = False
