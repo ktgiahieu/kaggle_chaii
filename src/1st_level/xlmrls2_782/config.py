@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmrls2-c1-toext'
+my_model_dataset = 'chaii-xlmrls2-782'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -22,7 +22,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmrls2_c1_toext'
+    model_save = 'xlmrls2_782'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -45,7 +45,7 @@ N_REINIT_LAST_LAYERS = 0
 TRAIN_BATCH_SIZE = 4
 VALID_BATCH_SIZE = 4
 ACCUMULATION_STEPS = 2
-MAX_LEN = 320
+MAX_LEN = 384
 DOC_STRIDE = 128
 
 TOKENIZER = AutoTokenizer.from_pretrained(
@@ -71,7 +71,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 3e-5
+HEAD_LEARNING_RATE = 1e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'linear' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [3e-5, 3e-5]
+LEARNING_RATES_RANGE = [1e-5, 1e-5]
 WEIGHT_DECAY = 0.01
