@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import transformers
 import tqdm.autonotebook as tqdm
+from sklearn import model_selection
 
 import utils
 import config
@@ -16,7 +17,16 @@ import engine
 predicted_labels = {}
 
 def run(fold):
-    dfx = pd.read_csv(config.TRAINING_FILE)
+    dfx = pd.read_csv(config.ORIG_TRAINING_FILE)
+    def create_folds(data, num_splits):
+        data["kfold"] = -1
+        kf = model_selection.StratifiedKFold(n_splits=num_splits, shuffle=True, random_state=2021)
+        for f, (t_, v_) in enumerate(kf.split(X=data, y=data['language'])):
+            data.loc[v_, 'kfold'] = f
+        return data
+
+    dfx = create_folds(dfx, num_splits=5)
+
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     device = torch.device('cuda')
@@ -26,7 +36,7 @@ def run(fold):
 
     seed_models = []
     for seed in config.SEEDS:
-        model = models.ChaiiModel(conf=model_config)
+        model = models.Model(config.MODEL_CONFIG, model_config)
         model.to(device)
         if config.is_kaggle:
             if fold<=2:

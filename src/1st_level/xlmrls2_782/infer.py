@@ -45,7 +45,7 @@ def run():
     predicted_labels_end = []
     all_models = []
     for seed in config.SEEDS:
-        model = models.ChaiiModel(conf=model_config)
+        model = models.Model(config.MODEL_CONFIG, model_config)
         model.to(device)
         model.eval()
         all_models.append(model)

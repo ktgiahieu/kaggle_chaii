@@ -1,62 +1,40 @@
 import torch
+import torch.nn as nn
 import transformers
 
-import config
-
-class ChaiiModel(transformers.BertPreTrainedModel):
-    def __init__(self, conf):
-        super(ChaiiModel, self).__init__(conf)
-        self.automodel = transformers.AutoModel.from_pretrained(
-            config.MODEL_CONFIG,
-            config=conf)
-
-        #self.classifier = torch.nn.Sequential(
-        #    torch.nn.Linear(conf.hidden_size*2, conf.hidden_size),
-        #    torch.nn.GELU(),
-        #    torch.nn.Linear(conf.hidden_size, 2),
-        #)
-
-        #self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
-        self.classifier = torch.nn.Linear(conf.hidden_size, 2)
-        if isinstance(self.classifier, torch.nn.Linear):
-            self.classifier.weight.data.normal_(mean=0.0, std=conf.initializer_range)
-            if self.classifier.bias is not None:
-                self.classifier.bias.data.zero_()
-        #torch.nn.init.normal_(self.classifier.weight, std=0.02)
+class Model(nn.Module):
+    def __init__(self, modelname_or_path, config):
+        super(Model, self).__init__()
+        self.config = config
+        self.xlm_roberta = transformers.AutoModel.from_pretrained(modelname_or_path, config=config)
+        self.qa_outputs = nn.Linear(config.hidden_size, 2)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self._init_weights(self.qa_outputs)
         
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+            if module.bias is not None:
+                module.bias.data.zero_()
 
-    def forward(self, ids, mask):
-        out = self.automodel(ids, attention_mask=mask)
+    def forward(
+        self, 
+        ids, 
+        mask=None, 
+    ):
+        outputs = self.xlm_roberta(
+            ids,
+            attention_mask=mask,
+        )
 
-        ## Mean-max pooler
-        #out = out.hidden_states
-        #out = torch.stack(
-        #    tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN)), dim=0)
-        #out_mean = torch.mean(out, dim=0)
-        #out_max, _ = torch.max(out, dim=0)
-        #pooled_last_hidden_states = torch.cat((out_mean, out_max), dim=-1)
-        pooled_last_hidden_states = out.last_hidden_state
-
-        ## Mean-std pooler
-        #out = out.hidden_states
-        #out = torch.stack(
-        #    tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN)), dim=0)
-        #out_mean = torch.mean(out, dim=0)
-        #out_std = torch.std(out, dim=0)
-        #pooled_last_hidden_states = torch.cat((out_mean, out_std), dim=-1)
-
-        ## Multisample Dropout: https://arxiv.org/abs/1905.09788
-        #logits = torch.mean(torch.stack([
-        #    self.classifier(self.high_dropout(pooled_last_hidden_states))
-        #    for _ in range(5)
-        #], dim=0), dim=0)
-
-        logits = self.classifier(pooled_last_hidden_states)
-
-        start_logits, end_logits = logits.split(1, dim=-1)
-
-        # (batch_size, num_tokens)
+        sequence_output = outputs[0]
+        pooled_output = outputs[1]
+        
+        # sequence_output = self.dropout(sequence_output)
+        qa_logits = self.qa_outputs(sequence_output)
+        
+        start_logits, end_logits = qa_logits.split(1, dim=-1)
         start_logits = start_logits.squeeze(-1)
         end_logits = end_logits.squeeze(-1)
-
+    
         return start_logits, end_logits

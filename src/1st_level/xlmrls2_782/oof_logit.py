@@ -26,7 +26,7 @@ def run(fold):
 
     seed_models = []
     for seed in config.SEEDS:
-        model = models.ChaiiModel(conf=model_config)
+        model = models.Model(config.MODEL_CONFIG, model_config)
         model.to(device)
         if config.is_kaggle:
             if fold<=2:
