@@ -83,7 +83,7 @@ def run(fold, seed):
     #    optimizer=optimizer,
     #    num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
     #    num_training_steps=num_train_steps)
-    scheduler = transformers.get_constant_scheduler(
+    scheduler = transformers.get_constant_schedule(
         optimizer=optimizer)
 
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
