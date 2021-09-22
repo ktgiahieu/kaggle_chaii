@@ -36,6 +36,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
     step = 0
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
+
+    val_score = eval_fn(valid_data_loader, model, device, 0, writer, df_valid, valid_dataset)
+    print(f"val_score: {val_score:0.4}")
+
     for epoch in range(config.EPOCHS):
         losses = utils.AverageMeter()
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
