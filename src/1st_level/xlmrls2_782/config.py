@@ -13,6 +13,7 @@ my_model_dataset = 'chaii-xlmrls2-782'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     ORIG_TRAINING_FILE = f'../input/{my_impl}/data/train.csv'
+    TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
