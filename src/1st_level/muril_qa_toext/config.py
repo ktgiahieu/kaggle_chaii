@@ -18,7 +18,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/muril-base-cased-squad2'
+    MODEL_CONFIG = '../input/google-muril-base-cased-squad2'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
@@ -31,7 +31,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/muril-base-cased-squad2'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-base-cased-squad2'
 
 # Model params
 SEEDS = [1000]
