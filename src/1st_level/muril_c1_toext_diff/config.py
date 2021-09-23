@@ -34,7 +34,7 @@ else: #colab
     MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-base-cased-squad2'
 
 # Model params
-SEEDS = [13, 26, 43, 1001, 2022]
+SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
 EPOCHS = 1
 #NEGATIVE_POSITIVE_RATIO = 3.0
@@ -54,7 +54,7 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [ 8, 10,  6,  4, 12]
+N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
 SOFT_ALPHA = [0.6, 1.0, 0.9, 0.8, 0.7]
