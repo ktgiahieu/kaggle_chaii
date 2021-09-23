@@ -66,7 +66,7 @@ def run(fold, seed):
     model = models.ChaiiModel(conf=model_config, fold=fold)
     model = model.to(device)
 
-    model.load_state_dict(torch.load(config.PRETRAINED_MODEL_PATH, map_location="cuda"))
+    model.load_state_dict(torch.load(f"{config.PRETRAINED_MODEL_PATH}/model_{fold}_{seed}.bin", map_location="cuda"))
 
     model = utils.reinit_last_layers(model, reinit_layers=config.N_REINIT_LAST_LAYERS)
 
