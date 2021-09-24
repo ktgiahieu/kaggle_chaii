@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5
-EPOCHS = 1
+EPOCHS = 4
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
@@ -44,7 +44,7 @@ EARLY_STOPPING_DELTA = None
 N_REINIT_LAST_LAYERS = 0
 TRAIN_BATCH_SIZE = 2
 VALID_BATCH_SIZE = 2
-ACCUMULATION_STEPS = 4
+ACCUMULATION_STEPS = 8
 MAX_LEN = 384
 DOC_STRIDE = 128
 
@@ -64,14 +64,14 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'best_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
                 (10., 200*ACCUMULATION_STEPS),
                 ]
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 5e-5
+HEAD_LEARNING_RATE = 1e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'linear' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [5e-6, 8e-6]
-WEIGHT_DECAY = 0.001
+LEARNING_RATES_RANGE = [1e-5, 1e-5]
+WEIGHT_DECAY = 0.01
