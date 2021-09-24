@@ -55,7 +55,7 @@ import transformers
 import config
 
 class ChaiiModel(transformers.BertPreTrainedModel):
-    def __init__(self, conf):
+    def __init__(self, conf, fold):
         super(ChaiiModel, self).__init__(conf)
         self.automodel = transformers.AutoModelForQuestionAnswering.from_pretrained(
             config.MODEL_CONFIG,
