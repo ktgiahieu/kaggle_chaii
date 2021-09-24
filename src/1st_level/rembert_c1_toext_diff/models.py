@@ -61,6 +61,9 @@ class ChaiiModel(transformers.BertPreTrainedModel):
             config.MODEL_CONFIG,
             config=conf)
 
+        self.automodel.load_state_dict(torch.load(f"{config.MODEL_CONFIG}/pytorch_model.bin", map_location="cuda"))
+
+
         #self.classifier = torch.nn.Sequential(
         #    torch.nn.Linear(conf.hidden_size*2, conf.hidden_size),
         #    torch.nn.GELU(),
@@ -68,11 +71,11 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         #)
 
         #self.high_dropout = torch.nn.Dropout(config.HIGH_DROPOUT)
-        self.classifier = torch.nn.Linear(conf.hidden_size, 2)
-        if isinstance(self.classifier, torch.nn.Linear):
-            self.classifier.weight.data.normal_(mean=0.0, std=conf.initializer_range)
-            if self.classifier.bias is not None:
-                self.classifier.bias.data.zero_()
+        #self.classifier = torch.nn.Linear(conf.hidden_size, 2)
+        #if isinstance(self.classifier, torch.nn.Linear):
+        #    self.classifier.weight.data.normal_(mean=0.0, std=conf.initializer_range)
+        #    if self.classifier.bias is not None:
+        #        self.classifier.bias.data.zero_()
         #torch.nn.init.normal_(self.classifier.weight, std=0.02)
         
 
