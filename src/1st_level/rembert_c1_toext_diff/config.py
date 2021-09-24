@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5
-EPOCHS = 3
+EPOCHS = 1
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
@@ -73,5 +73,5 @@ EVAL_SCHEDULE = [
 #Layer wise learning rate
 HEAD_LEARNING_RATE = 1e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'linear' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [1e-5, 1e-5]
+LEARNING_RATES_RANGE = [5e-6, 7e-6]
 WEIGHT_DECAY = 0.01
