@@ -198,6 +198,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         for start_epoch in range(config.EPOCHS, -1, -1):
             model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{start_epoch}.pth'
             if os.path.exists(model_chkpt_filename):
+                print(f"Loading checkpoint at epoch {start_epoch}.")
                 checkpoint = torch.load(model_chkpt_filename)
                 model.load_state_dict(checkpoint['state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer'])
@@ -294,6 +295,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 }
                 model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{epoch+1}.pth'
                 torch.save(checkpoint, model_chkpt_filename)
+            print(f"Saved checkpoint at epoch {epoch+1}.")
 
             copyfile(f'./{model_path_filename}', model_path)
             print("Copied best checkpoint to google drive.")
