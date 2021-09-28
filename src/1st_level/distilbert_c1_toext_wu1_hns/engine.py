@@ -194,6 +194,7 @@ def classifier_loss_fn(logits, labels):
     return loss
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
+    start_epoch = 0
     if config.SAVE_CHECKPOINT:
         for start_epoch in range(config.EPOCHS, -1, -1):
             model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{start_epoch}.pth'
@@ -211,14 +212,13 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
     for epoch in range(config.EPOCHS):
+        if config.SAVE_CHECKPOINT:
+            if epoch < start_epoch:
+                continue
         losses = utils.AverageMeter()
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
         for bi, d in enumerate(tk0):
-            if config.SAVE_CHECKPOINT:
-                if epoch < start_epoch:
-                    tk0.set_postfix(loss=0)
-                    continue
             ids = d['ids']
             mask = d['mask']
             start_labels = d['start_labels']
