@@ -203,12 +203,13 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             model.load_state_dict(model_path)
             best_val_score = eval_fn(valid_data_loader, model, device, 0, writer, df_valid, valid_dataset)
 
+            start_epoch = checkpoint['epoch']
             print(f"Loading checkpoint at epoch {start_epoch}.")
             checkpoint = torch.load(model_chkpt_filename)
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
-            start_epoch = checkpoint['epoch']
+            
 
     model_path_filename = model_path.split('/')[-1]
     step = 0
