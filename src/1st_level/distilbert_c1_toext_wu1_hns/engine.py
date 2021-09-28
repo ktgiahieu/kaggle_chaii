@@ -196,7 +196,7 @@ def classifier_loss_fn(logits, labels):
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     if config.SAVE_CHECKPOINT:
         for start_epoch in range(config.EPOCHS, -1, -1):
-            model_chkpt_filename = '.'.join(model_path_filename.split('.')[:-1]) + f'_{start_epoch}.pth'
+            model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{start_epoch}.pth'
             if os.path.exists(model_chkpt_filename):
                 checkpoint = torch.load(model_chkpt_filename)
                 model.load_state_dict(checkpoint['state_dict'])
@@ -292,7 +292,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                     'optimizer': optimizer.state_dict(),
                     'scheduler': scheduler.state_dict()
                 }
-                model_chkpt_filename = '.'.join(model_path_filename.split('.')[:-1]) + f'_{epoch+1}.pth'
+                model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{epoch+1}.pth'
                 torch.save(checkpoint, model_chkpt_filename)
 
             copyfile(f'./{model_path_filename}', model_path)
