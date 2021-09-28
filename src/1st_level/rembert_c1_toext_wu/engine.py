@@ -195,19 +195,22 @@ def classifier_loss_fn(logits, labels):
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     start_epoch = 0
-    if config.SAVE_CHECKPOINT:
-        for start_epoch in range(config.EPOCHS, -1, -1):
-            model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{start_epoch}.pth'
-            if os.path.exists(model_chkpt_filename):
-                print(f"Loading checkpoint at epoch {start_epoch}.")
-                checkpoint = torch.load(model_chkpt_filename)
-                model.load_state_dict(checkpoint['state_dict'])
-                optimizer.load_state_dict(checkpoint['optimizer'])
-                scheduler.load_state_dict(checkpoint['scheduler'])
-                break
-    
-    model_path_filename = model_path.split('/')[-1]
     best_val_score = None
+    if config.SAVE_CHECKPOINT:
+        model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + '.pth'
+        if os.path.exists(model_chkpt_filename):
+            print("Calculating best_val_score so far.")
+            model.load_state_dict(model_path)
+            best_val_score = eval_fn(valid_data_loader, model, device, 0, writer, df_valid, valid_dataset)
+
+            print(f"Loading checkpoint at epoch {start_epoch}.")
+            checkpoint = torch.load(model_chkpt_filename)
+            model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            scheduler.load_state_dict(checkpoint['scheduler'])
+            start_epoch = checkpoint['epoch']
+
+    model_path_filename = model_path.split('/')[-1]
     step = 0
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
@@ -298,7 +301,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                     'optimizer': optimizer.state_dict(),
                     'scheduler': scheduler.state_dict()
                 }
-                model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + f'_{epoch+1}.pth'
+                model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + '.pth'
                 torch.save(checkpoint, model_chkpt_filename)
             print(f"Saved checkpoint at epoch {epoch+1}.")
 
