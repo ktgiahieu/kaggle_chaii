@@ -1,4 +1,5 @@
 from shutil import copyfile
+import os 
 
 import numpy as np
 import torch
@@ -26,6 +27,16 @@ def classifier_loss_fn(logits, labels):
     return loss
 
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
+    if config.SAVE_CHECKPOINT:
+        for start_epoch in range(config.EPOCHS, -1, -1):
+            model_chkpt_filename = '.'.join(model_path_filename.split('.')[:-1]) + f'_{start_epoch}.pth'
+            if os.path.exists(model_chkpt_filename):
+                checkpoint = torch.load(model_chkpt_filename)
+                model.load_state_dict(checkpoint['state_dict'])
+                optimizer.load_state_dict(checkpoint['optimizer'])
+                scheduler.load_state_dict(checkpoint['scheduler'])
+                break
+    
     model_path_filename = model_path.split('/')[-1]
     best_val_score = None
     step = 0
@@ -36,6 +47,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
         for bi, d in enumerate(tk0):
+            if config.SAVE_CHECKPOINT:
+                if epoch < start_epoch:
+                    tk0.set_postfix(loss=0)
+                    continue
             ids = d['ids']
             mask = d['mask']
             start_labels = d['start_labels']
@@ -103,6 +118,16 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             print(f"val_score: {val_score:0.4}")
             torch.save(model.state_dict(), f'./{model_path_filename}')
         if not config.is_kaggle: #colab
+            if config.SAVE_CHECKPOINT:
+                checkpoint = {
+                    'epoch': epoch + 1,
+                    'state_dict': model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'scheduler': scheduler.state_dict()
+                }
+                model_chkpt_filename = '.'.join(model_path_filename.split('.')[:-1]) + f'_{epoch+1}.pth'
+                torch.save(checkpoint, model_chkpt_filename)
+
             copyfile(f'./{model_path_filename}', model_path)
             print("Copied best checkpoint to google drive.")
     return best_val_score
