@@ -200,7 +200,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + '.pth'
         if os.path.exists(model_chkpt_filename):
             print("Calculating best_val_score so far.")
-            model.load_state_dict(model_path)
+            model.load_state_dict(torch.load(model_path, map_location="cuda"))
             best_val_score = eval_fn(valid_data_loader, model, device, 0, writer, df_valid, valid_dataset)
 
             start_epoch = checkpoint['epoch']
