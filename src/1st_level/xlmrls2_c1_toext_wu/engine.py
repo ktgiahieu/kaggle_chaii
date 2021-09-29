@@ -209,6 +209,9 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
+            del checkpoint
+            torch.cuda.empty_cache()
+            gc.collect()
             
 
     model_path_filename = model_path.split('/')[-1]
