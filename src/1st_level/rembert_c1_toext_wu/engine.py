@@ -203,9 +203,9 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             model.load_state_dict(torch.load(model_path, map_location="cuda"))
             best_val_score = eval_fn(valid_data_loader, model, device, 0, writer, df_valid, valid_dataset)
 
+            checkpoint = torch.load(model_chkpt_filename)
             start_epoch = checkpoint['epoch']
             print(f"Loading checkpoint at epoch {start_epoch}.")
-            checkpoint = torch.load(model_chkpt_filename)
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
