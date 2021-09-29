@@ -196,6 +196,7 @@ def classifier_loss_fn(logits, labels):
 def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     start_epoch = 0
     best_val_score = None
+    best_epoch = 0
     if config.SAVE_CHECKPOINT:
         model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + '.pth'
         if os.path.exists(model_chkpt_filename):
@@ -205,6 +206,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
             checkpoint = torch.load(model_chkpt_filename)
             start_epoch = checkpoint['epoch']
+            best_epoch = start_epoch - 1
             print(f"Loading checkpoint at epoch {start_epoch}.")
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
