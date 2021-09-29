@@ -18,7 +18,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/markussagen-xlmrlf-base-4096-squad2'
+    MODEL_CONFIG = '../input/markussagen-xlmrlf-base-4096-squad2-384'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
@@ -33,7 +33,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/markussagen-xlmrlf-base-4096-squad2'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/markussagen-xlmrlf-base-4096-squad2-384'
 
 # Model params
 SEEDS = [20, 33, 50, 1008, 2029]

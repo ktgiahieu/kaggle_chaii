@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-xlmrlf-c1-toext-diff1'
+my_model_dataset = 'chaii-xlmrlf-c1-toext-diff2'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -18,11 +18,11 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/markussagen-xlmrlf-base-4096-squad2-384'
+    MODEL_CONFIG = '../input/markussagen-xlmrlf-base-4096-squad2-4096'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'xlmrlf_c1_toext_diff1'
+    model_save = 'xlmrlf_c1_toext_diff2'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
@@ -31,7 +31,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/markussagen-xlmrlf-base-4096-squad2-384'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/markussagen-xlmrlf-base-4096-squad2-4096'
 
 # Model params
 SEEDS = [20, 33, 50, 1008, 2029]
@@ -45,8 +45,8 @@ N_REINIT_LAST_LAYERS = 0
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 16
 ACCUMULATION_STEPS = 1
-MAX_LEN = 384
-DOC_STRIDE = 128
+MAX_LEN = 4096
+DOC_STRIDE = 1024
 
 TOKENIZER = AutoTokenizer.from_pretrained(
     MODEL_CONFIG)
