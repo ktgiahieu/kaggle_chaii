@@ -79,7 +79,7 @@ def run(fold, seed):
         swa_start=int(num_train_steps * config.SWA_RATIO),
         swa_freq=config.SWA_FREQ,
         swa_lr=None)
-    scheduler = transformers.get_linear_schedule_with_warmup(
+    scheduler = transformers.get_cosine_schedule_with_warmup(
         optimizer=optimizer,
         num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
         num_training_steps=num_train_steps)

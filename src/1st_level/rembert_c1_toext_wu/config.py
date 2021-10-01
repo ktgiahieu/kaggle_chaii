@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5
-EPOCHS = 4
+EPOCHS = 10
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 SAVE_CHECKPOINT = True
@@ -59,7 +59,7 @@ N_LAST_HIDDEN = [20,  8, 24, 16, 12]
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = [0.35, 0.5 , 0.4 , 0.3 , 0.45]
 SOFT_ALPHA = [1.0, 0.6, 0.9, 0.8, 0.7 ]
-WARMUP_RATIO = 0.1
+WARMUP_RATIO = 0.001
 
 USE_SWA = False
 SWA_RATIO = 0.9
@@ -72,7 +72,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 3e-5
-LEARNING_RATE_LAYERWISE_TYPE = 'linear' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [5e-6, 2e-5]
-WEIGHT_DECAY = 0.001
+HEAD_LEARNING_RATE = 1e-3
+LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
+LEARNING_RATES_RANGE = [1e-5, 1e-4]
+WEIGHT_DECAY = 0.01
