@@ -200,7 +200,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         if os.path.exists(model_chkpt_filename):
             checkpoint = torch.load(model_chkpt_filename)
             start_iter = checkpoint['iter']
-            print(f"Loading checkpoint at iter {start_epoch}.")
+            print(f"Loading checkpoint at iter {start_iter}.")
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             scheduler.load_state_dict(checkpoint['scheduler'])
