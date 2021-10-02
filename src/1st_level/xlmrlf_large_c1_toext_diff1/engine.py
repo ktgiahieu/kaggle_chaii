@@ -269,7 +269,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             step += 1
 
             if config.SAVE_CHECKPOINT:
-                if (bi+1) % 8:
+                if (bi+1) % 8 == 0:
                     checkpoint = {
                         'iter': bi + 1,
                         'state_dict': model.state_dict(),
