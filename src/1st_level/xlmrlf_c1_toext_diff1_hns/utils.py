@@ -315,6 +315,112 @@ def postprocess_heatmap_logit(examples, features, raw_predictions, n_best_size =
 
     return heatmap_logit
 
+def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20, max_answer_char_length = 50):
+    all_start_logits, all_end_logits = raw_predictions
+    
+    example_id_to_index = {k: i for i, k in enumerate(examples["id"])}
+    features_per_example = collections.defaultdict(list)
+    for i, feature in enumerate(features):
+        features_per_example[example_id_to_index[feature["example_ids"]]].append(i)
+
+    char_prob = collections.OrderedDict()
+
+    print(f"Post-processing {len(examples)} example predictions split into {len(features)} features.")
+
+    for example_index, example in examples.iterrows():
+        feature_indices = features_per_example[example_index]
+
+        min_null_score = None
+        valid_answers = []
+        
+        context = example["context"]
+
+        answer_start_sum_logits = np.zeros(len(context), dtype=np.float)
+        answer_end_sum_logits = np.zeros(len(context), dtype=np.float)
+
+        answer_start_num_logits = np.zeros(len(context), dtype=np.float)
+        answer_end_num_logits = np.zeros(len(context), dtype=np.float)
+
+        answer_start_offsets = [None] * len(context)
+        answer_end_offsets = [None] * len(context)
+
+        for feature_index in feature_indices:
+            start_logits = all_start_logits[feature_index]
+            end_logits = all_end_logits[feature_index]
+
+            sequence_ids = features[feature_index]["sequence_ids"]
+            context_index = 1
+
+            features[feature_index]["offsets"] = [
+                (o if sequence_ids[k] == context_index else None)
+                for k, o in enumerate(features[feature_index]["offsets"])
+            ]
+            offsets = features[feature_index]["offsets"]
+            cls_index = features[feature_index]["ids"].index(config.TOKENIZER.cls_token_id)
+
+            answer_start_sum_current_logit = np.zeros(len(context), dtype=np.float)
+            answer_end_sum_current_logit = np.zeros(len(context), dtype=np.float)
+            answer_start_num_current_logit = np.zeros(len(context), dtype=np.float)
+            answer_end_num_current_logit = np.zeros(len(context), dtype=np.float)
+
+            for start_index in range(len(start_logits)):
+                if offsets[start_index] is None:
+                    continue
+                
+                start_char = offsets[start_index][0]
+
+                answer_start_sum_current_logit[start_char] = start_logits[start_index]
+                answer_start_num_current_logit[start_char] = 1
+
+                if answer_start_offsets[start_char] is None:
+                    answer_start_offsets[start_char] = (offsets[start_index][0], offsets[start_index][1])
+
+            for end_index in range(len(end_logits)):
+                if offsets[end_index] is None:
+                    continue
+                end_char = offsets[end_index][1] - 1
+
+                answer_end_sum_current_logit[end_char] = end_logits[end_index]
+                answer_end_num_current_logit[end_char] = 1
+
+                if answer_end_offsets[end_char] is None:
+                    answer_end_offsets[end_char] = (offsets[end_index][0], offsets[end_index][1])
+            
+            answer_start_sum_logits = answer_start_sum_logits + answer_start_sum_current_logit
+            answer_end_sum_logits = answer_end_sum_logits + answer_end_sum_current_logit
+            answer_start_num_logits = answer_start_num_logits + answer_start_num_current_logit
+            answer_end_num_logits = answer_end_num_logits + answer_end_num_current_logit
+
+
+        answer_start_sum_logits[answer_start_num_logits==0] = -np.inf         
+        answer_end_sum_logits[answer_end_num_logits==0] = -np.inf
+        answer_start_num_logits[answer_start_num_logits==0] = 1
+        answer_end_num_logits[answer_end_num_logits==0] = 1
+
+        answer_start_sum_logits = answer_start_sum_logits / answer_start_num_logits
+        answer_end_sum_logits = answer_end_sum_logits / answer_end_num_logits
+
+        answer_start_sum_logits = softmax(answer_start_sum_logits)
+        answer_end_sum_logits = softmax(answer_end_sum_logits)
+
+        answer_start_char_prob = np.zeros(len(context), dtype=np.float)
+        answer_end_char_prob = np.zeros(len(context), dtype=np.float)
+        for start_o in answer_start_offsets:
+            if start_o is not None:
+                answer_start_char_prob[start_o[0]: start_o[1]] = answer_start_sum_logits[start_o[0]]
+        for end_o in answer_end_offsets:
+            if end_o is not None:
+                answer_end_char_prob[end_o[0]: end_o[1]] = answer_end_sum_logits[end_o[1]-1]
+
+        print('answer_start_sum_logits')
+        print(answer_start_sum_logits)
+        print('answer_start_char_prob')
+        print(answer_start_char_prob)
+
+        char_prob[example["id"]] = (answer_start_char_prob, answer_end_char_prob)
+
+    return char_prob
+
 def token_level_to_char_level(text, offsets, preds):
     probas_char = np.zeros(len(text))
     for i, offset in enumerate(offsets):
