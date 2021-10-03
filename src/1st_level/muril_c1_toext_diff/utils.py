@@ -373,7 +373,7 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
                 answer_start_num_current_logit[start_char] = 1
 
                 if answer_start_offsets[start_char] is None:
-                    answer_start_offsets.append((offsets[start_index][0], offsets[start_index][1]))
+                    answer_start_offsets[start_char] = (offsets[start_index][0], offsets[start_index][1])
 
             for end_index in range(len(end_logits)):
                 if offsets[end_index] is None:
@@ -384,7 +384,7 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
                 answer_end_num_current_logit[end_char] = 1
 
                 if answer_end_offsets[end_char] is None:
-                    answer_end_offsets.append((offsets[end_index][0], offsets[end_index][1]))
+                    answer_end_offsets[end_char] = (offsets[end_index][0], offsets[end_index][1])
             
             answer_start_sum_logits = answer_start_sum_logits + answer_start_sum_current_logit
             answer_end_sum_logits = answer_end_sum_logits + answer_end_sum_current_logit
