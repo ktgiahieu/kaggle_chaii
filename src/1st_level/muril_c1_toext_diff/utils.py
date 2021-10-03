@@ -406,9 +406,11 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
         answer_start_char_prob = np.zeros(len(context), dtype=np.float)
         answer_end_char_prob = np.zeros(len(context), dtype=np.float)
         for start_o in answer_start_offsets:
-            answer_start_char_prob[start_o[0]: start_o[1]] = answer_start_sum_logits[start_o[0]]
+            if start_o is not None:
+                answer_start_char_prob[start_o[0]: start_o[1]] = answer_start_sum_logits[start_o[0]]
         for end_o in answer_end_offsets:
-            answer_end_char_prob[end_o[0]: end_o[1]] = answer_end_sum_logits[end_o[1]-1]
+            if end_o is not None:
+                answer_end_char_prob[end_o[0]: end_o[1]] = answer_end_sum_logits[end_o[1]-1]
 
         print('answer_start_sum_logits')
         print(answer_start_sum_logits)
@@ -417,7 +419,7 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
 
         char_prob[example["id"]] = (answer_start_char_prob, answer_end_char_prob)
 
-    return heatmap_logit
+    return char_prob
 
 def token_level_to_char_level(text, offsets, preds):
     probas_char = np.zeros(len(text))
