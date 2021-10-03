@@ -412,11 +412,6 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
             if end_o is not None:
                 answer_end_char_prob[end_o[0]: end_o[1]] = answer_end_sum_logits[end_o[1]-1]
 
-        print('answer_start_sum_logits')
-        print(answer_start_sum_logits)
-        print('answer_start_char_prob')
-        print(answer_start_char_prob)
-
         char_prob[example["id"]] = (answer_start_char_prob, answer_end_char_prob)
 
     return char_prob
