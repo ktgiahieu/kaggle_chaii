@@ -23,6 +23,8 @@ def loss_fn(start_logits, end_logits,
     m = torch.nn.LogSoftmax(dim=1)
     loss_fct = torch.nn.KLDivLoss(reduction='none')
     start_loss = loss_fct(m(start_logits), start_positions)
+    print(torch.nn.KLDivLoss(reduction='batchmean')(m(start_logits), start_positions))
+    print(torch.nn.KLDivLoss(reduction='mean')(m(start_logits), start_positions))
     print(torch.mean(start_loss,dim=1))
     end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = (start_loss + end_loss)
