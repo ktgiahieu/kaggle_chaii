@@ -14,15 +14,17 @@ def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     start_labels = torch.argmax(start_positions, dim=1)
     end_labels = torch.argmax(end_positions, dim=1)
+    print(start_labels)
 
     start_weight = torch.where(start_labels > 0, 3, 1)
     end_weight = torch.where(end_labels > 0, 3, 1)
     print(start_weight)
 
     m = torch.nn.LogSoftmax(dim=1)
-    loss_fct = torch.nn.KLDivLoss()
-    start_loss = loss_fct(m(start_logits), start_positions) * start_weight
-    end_loss = loss_fct(m(end_logits), end_positions) * end_weight
+    loss_fct = torch.nn.KLDivLoss(reduction='none')
+    start_loss = loss_fct(m(start_logits), start_positions)
+    print(start_loss)
+    end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = (start_loss + end_loss)
     return total_loss
 
