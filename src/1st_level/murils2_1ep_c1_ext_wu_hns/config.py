@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-rembert-c1-ext-hns'
+my_model_dataset = 'chaii-murils2-1ep-c1-ext-wu-hns'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -18,36 +18,35 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/google-rembert'
+    MODEL_CONFIG = '../input/google-muril-base-cased-squad2-1ep'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'rembert_c1_ext_hns'
+    model_save = 'murils2_1ep_c1_ext_wu_hns'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/rembert_c1_ext_wu.pkl'
-    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/rembert_c1_ext_wu'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/murils2_1ep_c1_ext_wu.pkl'
+    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/murils2_1ep_c1_ext_wu'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = 'google/rembert'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-base-cased-squad2-1ep'
 
 # Model params
-SEEDS = [15, 28, 45, 1003, 2024]
+SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
-EPOCHS = 5
-NEGATIVE_POSITIVE_RATIO = 1.0
+EPOCHS = 1
+#NEGATIVE_POSITIVE_RATIO = 3.0
 
-SAVE_CHECKPOINT = True
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
 N_REINIT_LAST_LAYERS = 0
-TRAIN_BATCH_SIZE = 2
-VALID_BATCH_SIZE = 2
-ACCUMULATION_STEPS = 8
+TRAIN_BATCH_SIZE = 16
+VALID_BATCH_SIZE = 16
+ACCUMULATION_STEPS = 1
 MAX_LEN = 384
 DOC_STRIDE = 128
 
@@ -57,10 +56,10 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [20,  8, 24, 16, 12]
+N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
 BERT_DROPOUT = 0.1
-HIGH_DROPOUT = [0.35, 0.5 , 0.4 , 0.3 , 0.45]
-SOFT_ALPHA = [1.0, 0.6, 0.9, 0.8, 0.7 ]
+HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
+SOFT_ALPHA = [0.6, 1.0, 0.9, 0.8, 0.7]
 WARMUP_RATIO = 0.1
 
 USE_SWA = False
