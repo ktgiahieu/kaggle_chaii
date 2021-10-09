@@ -12,7 +12,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
             config=conf)
 
         self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(conf.hidden_size*2, conf.hidden_size),
+            torch.nn.Linear(conf.hidden_size, conf.hidden_size),
             torch.nn.Tanh(),
             torch.nn.LayerNorm(conf.hidden_size, eps=conf.layer_norm_eps if hasattr(conf,"layer_norm_eps") else 1e-5),
             torch.nn.Linear(conf.hidden_size, 2),
@@ -28,19 +28,21 @@ class ChaiiModel(transformers.BertPreTrainedModel):
     def forward(self, ids, mask):
         out = self.automodel(ids, attention_mask=mask)
 
-        # Mean-max pooler
-        out = out.hidden_states
-        out = torch.stack(
-            tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN[self.fold])), dim=0)
-        out_mean = torch.mean(out, dim=0)
-        out_max, _ = torch.max(out, dim=0)
-        pooled_last_hidden_states = torch.cat((out_mean, out_max), dim=-1)
+        ## Mean-max pooler
+        #out = out.hidden_states
+        #out = torch.stack(
+        #    tuple(out[-i - 1] for i in range(config.N_LAST_HIDDEN[self.fold])), dim=0)
+        #out_mean = torch.mean(out, dim=0)
+        #out_max, _ = torch.max(out, dim=0)
+        #pooled_last_hidden_states = torch.cat((out_mean, out_max), dim=-1)
 
-        # Multisample Dropout: https://arxiv.org/abs/1905.09788
-        logits = torch.mean(torch.stack([
-            self.classifier(self.high_dropout(pooled_last_hidden_states))
-            for _ in range(5)
-        ], dim=0), dim=0)
+        ## Multisample Dropout: https://arxiv.org/abs/1905.09788
+        #logits = torch.mean(torch.stack([
+        #    self.classifier(self.high_dropout(pooled_last_hidden_states))
+        #    for _ in range(5)
+        #], dim=0), dim=0)
+
+        logits = self.classifier(out.last_hidden_state)
 
         start_logits, end_logits = logits.split(1, dim=-1)
 
