@@ -28,7 +28,6 @@ def run():
     model_config.output_hidden_states = True
 
     test_dataset = dataset.ChaiiDataset(
-        fold=0,
         ids=df_test.id.values,
         contexts=df_test.context.values,
         questions=df_test.question.values,
@@ -48,7 +47,7 @@ def run():
         
     for i in range(config.N_FOLDS):  
         seed = config.SEEDS[i]
-        model = models.ChaiiModel(conf=model_config, fold=i)
+        model = models.ChaiiModel(conf=model_config)
         model.to(device)
         model.eval()
         if config.is_kaggle:

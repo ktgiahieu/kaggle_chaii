@@ -26,7 +26,7 @@ def run(fold):
         config.MODEL_CONFIG)
     model_config.output_hidden_states = True
 
-    model = models.ChaiiModel(conf=model_config, fold=fold)
+    model = models.ChaiiModel(conf=model_config)
     model.to(device)
     if config.is_kaggle:
         if fold<=2:
@@ -39,7 +39,6 @@ def run(fold):
     model.eval()
 
     valid_dataset = dataset.ChaiiDataset(
-        fold=fold,
         ids=df_valid.id.values,
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
