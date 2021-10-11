@@ -283,6 +283,9 @@ def postprocess_heatmap_logit(examples, features, raw_predictions, n_best_size =
                     continue
                 start_char = offsets[start_index][0]
 
+                if context[start_char] == ' ':
+                    start_char += 1
+
                 answer_start_sum_current_logit[start_char] = start_logits[start_index]
                 answer_start_num_current_logit[start_char] = 1
 
@@ -368,6 +371,9 @@ def postprocess_char_prob(examples, features, raw_predictions, n_best_size = 20,
                     continue
                 
                 start_char = offsets[start_index][0]
+
+                if context[start_char] == ' ':
+                    start_char += 1
 
                 answer_start_sum_current_logit[start_char] = start_logits[start_index]
                 answer_start_num_current_logit[start_char] = 1
