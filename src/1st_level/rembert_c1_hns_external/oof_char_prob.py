@@ -13,11 +13,9 @@ import config
 import models
 import dataset
 import engine
-char_probs = {}
+char_prob = {}
 
 def run(fold):
-    seed = config.SEEDS[fold]
-
     dfx = pd.read_csv(config.TRAINING_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
@@ -26,17 +24,20 @@ def run(fold):
         config.MODEL_CONFIG)
     model_config.output_hidden_states = True
 
-    model = models.ChaiiModel(conf=model_config)
-    model.to(device)
-    if config.is_kaggle:
-        if fold<=2:
-            model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+    seed_models = []
+    for seed in config.SEEDS:
+        model = models.ChaiiModel(conf=model_config)
+        model.to(device)
+        if config.is_kaggle:
+            if fold<=2:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+            else:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
         else:
-            model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
-    else:
-        model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
-    model.load_state_dict(torch.load(model_path), strict=False)
-    model.eval()
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+        model.load_state_dict(torch.load(model_path), strict=False)
+        model.eval()
+        seed_models.append(model)
 
     valid_dataset = dataset.ChaiiDataset(
         ids=df_valid.id.values,
@@ -70,7 +71,16 @@ def run(fold):
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
 
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs_seeds_start = []
+            outputs_seeds_end = []
+            for i in range(len(config.SEEDS)):
+                outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
+
+                outputs_seeds_start.append(outputs_start)
+                outputs_seeds_end.append(outputs_end)
+
+            outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
+            outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
             
             loss = engine.loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
@@ -88,24 +98,17 @@ def run(fold):
         tuple(x for x in predicted_labels_per_fold_start), dim=0)
     predicted_labels_per_fold_end = torch.cat(
         tuple(x for x in predicted_labels_per_fold_end), dim=0)
-    #Post process 
-    ## Baseline
-    #predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
-    #predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
-    #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
-    #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
-    
-    # Heatmap
-    char_prob = utils.postprocess_char_prob(df_valid, valid_dataset.features, 
-                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
 
-    char_probs.update(char_prob)
+    # Heatmap logit
+    char_prob_per_fold = utils.postprocess_char_prob(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    char_prob.update(char_prob_per_fold)
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
+    utils.seed_everything(seed=config.SEEDS[0])
     for i in range(config.N_FOLDS):
-        utils.seed_everything(seed=config.SEEDS[i])
         run(i)
         torch.cuda.empty_cache()
         gc.collect()
@@ -115,4 +118,4 @@ if __name__ == '__main__':
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(char_probs, handle)
+        pickle.dump(char_prob, handle)
