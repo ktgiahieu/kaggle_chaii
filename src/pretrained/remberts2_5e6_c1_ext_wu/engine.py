@@ -275,7 +275,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                                     f"(from epoch {best_epoch})")                                    
             step += 1
 
-            del ids, mask, start_labels, end_labels
+            del ids, mask, start_labels, end_labels, outputs_start, outputs_end
 
             torch.cuda.empty_cache()
             gc.collect()
@@ -309,7 +309,11 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 }
                 model_chkpt_filename = '.'.join(model_path.split('.')[:-1]) + '.pth'
                 torch.save(checkpoint, model_chkpt_filename)
-            print(f"Saved checkpoint at epoch {epoch+1}.")
+                print(f"Saved checkpoint at epoch {epoch+1}.")
+
+                del checkpoint
+                torch.cuda.empty_cache()
+                gc.collect()
 
             copyfile(f'./{model_path_filename}', model_path)
             print("Copied best checkpoint to google drive.")
