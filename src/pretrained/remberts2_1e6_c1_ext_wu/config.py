@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-remberts2-5e6-c1-ext-wu'
+my_model_dataset = 'chaii-remberts2-1e6-c1-ext-wu'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/external_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -19,11 +19,11 @@ if is_kaggle:
     INFERED_PICKLE_PATH = '.'
 
     #MODEL_CONFIG = '../input/google-rembert'
-    MODEL_CONFIG = '../input/google-rembert-squad2-1ep-5e6'
+    MODEL_CONFIG = '../input/google-rembert-squad2-2ep-1e6'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'remberts2_5e6_c1_ext_wu'
+    model_save = 'remberts2_1e6_c1_ext_wu'
     
     TRAINING_FILE = f'/content/{repo_name}/data/external_dropped.csv'
     VALID_FILE = f'/content/{repo_name}/data/train_folds_cleaned_dropped.csv'
@@ -34,7 +34,7 @@ else: #colab
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
     #MODEL_CONFIG = 'google/rembert'
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-rembert-squad2-1ep-5e6'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-rembert-squad2-4ep-1e6/checkpoint-150000'
 
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
