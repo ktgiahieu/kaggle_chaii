@@ -38,7 +38,7 @@ else: #colab
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5
-EPOCHS = 10
+EPOCHS = 5
 NEGATIVE_POSITIVE_RATIO = 1.0
 
 SAVE_CHECKPOINT = True
