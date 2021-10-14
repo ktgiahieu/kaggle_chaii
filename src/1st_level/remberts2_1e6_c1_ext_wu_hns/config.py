@@ -33,7 +33,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-rembert-squad2-4ep-1e6/checkpoint-150000'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-rembert-squad2-4ep-1e6/checkpoint-150000'
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5
