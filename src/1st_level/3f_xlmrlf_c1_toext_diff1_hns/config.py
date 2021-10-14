@@ -70,3 +70,9 @@ SAVE_CHECKPOINT_TYPE = 'best_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
                 (10., 200*ACCUMULATION_STEPS),
                 ]
+
+#Layer wise learning rate
+HEAD_LEARNING_RATE = 5e-5
+LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
+LEARNING_RATES_RANGE = [1e-5, 4e-5]
+WEIGHT_DECAY = 0.001
