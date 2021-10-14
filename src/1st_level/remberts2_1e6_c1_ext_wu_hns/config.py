@@ -18,7 +18,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/google-rembert-squad2-2ep-1e6'
+    MODEL_CONFIG = '../input/google-rembert'
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
