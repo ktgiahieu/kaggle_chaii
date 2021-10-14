@@ -125,7 +125,7 @@ def run(fold):
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
     final_features = []
-    for i in range(5):
+    for i in range(config.N_FOLDS):
         utils.seed_everything(seed=config.SEEDS[i])
         all_features = run(i)
         final_features.extend(all_features)
