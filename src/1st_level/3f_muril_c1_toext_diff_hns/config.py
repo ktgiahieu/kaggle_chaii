@@ -11,7 +11,7 @@ comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
 my_model_dataset = 'chaii-3f-muril-c1-toext-diff-hns'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/3f_train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -24,7 +24,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = '3f_muril_c1_toext_diff_hns'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/3f_muril_c1_toext_diff.pkl'
