@@ -9,9 +9,9 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-3f-bert-c1-ext-wu'
+my_model_dataset = 'chaii-3f-bert-c1-toext-wu'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/external_dropped.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/3f_train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -22,10 +22,9 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = '3f_bert_c1_ext_wu'
+    model_save = '3f_bert_c1_toext_wu'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/external_dropped.csv'
-    VALID_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
@@ -37,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [48, 1106, 2027]
 N_FOLDS = 3
-EPOCHS = 10
+EPOCHS = 4
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
@@ -65,7 +64,7 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'best_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
                 (10., 200*ACCUMULATION_STEPS),
                 ]
