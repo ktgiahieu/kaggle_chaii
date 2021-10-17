@@ -15,10 +15,10 @@ import engine
 import utils
 
 
-def run(fold, seed):
-    dfx = pd.read_csv(config.TRAINING_FILE)
-    
-    df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
+def run(fold, seed):   
+    df_train = pd.read_csv(config.TRAINING_FILE)
+
+    dfx = pd.read_csv(config.VALID_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
     train_dataset = dataset.ChaiiDataset(
