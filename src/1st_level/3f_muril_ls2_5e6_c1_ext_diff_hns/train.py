@@ -21,6 +21,11 @@ def run(fold, seed):
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
+    with open(config.TRAINING_FILE_PICKLE, 'rb') as handle:
+        hns_features = pickle.load(handle)
+
+    hns_features = [x for x in hns_features if x['kfold'] != fold]
+
     train_dataset = dataset.ChaiiDataset(
         fold=fold,
         ids=df_train.id.values,
@@ -28,6 +33,7 @@ def run(fold, seed):
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
         answer_starts=df_train.answer_start.values,
+        hns_features=hns_features,
         mode='train')
 
     train_data_loader = torch.utils.data.DataLoader(
@@ -59,6 +65,8 @@ def run(fold, seed):
     ##
     model = models.ChaiiModel(conf=model_config, fold=fold)
     model = model.to(device)
+
+    model.load_state_dict(torch.load(f"{config.PRETRAINED_MODEL_PATH}/model_{fold}_{seed}.bin", map_location="cuda"))
 
     model = utils.reinit_last_layers(model, reinit_layers=config.N_REINIT_LAST_LAYERS)
 
