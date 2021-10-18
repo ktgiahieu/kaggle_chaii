@@ -9,9 +9,9 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-3f-muril-ls2-5e6-c1-ext-diff-hns'
+my_model_dataset = 'chaii-3f-muril-ls2-5e6-c1-ext-diff'
 if is_kaggle:
-    TRAINING_FILE = f'../input/{my_impl}/data/3f_train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'../input/{my_impl}/data/external_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
     MODEL_SAVE_PATH = f'.'
@@ -22,13 +22,12 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = '3f_muril_ls2_5e6_c1_ext_diff_hns'
+    model_save = '3f_muril_ls2_5e6_c1_ext_diff'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/external_dropped.csv'
+    VALID_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/3f_muril_ls2_5e6_c1_ext_diff.pkl'
-    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/3f_muril_ls2_5e6_c1_ext_diff'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
@@ -38,8 +37,8 @@ else: #colab
 # Model params
 SEEDS = [43, 1101, 2022]
 N_FOLDS = 3
-EPOCHS = 1
-NEGATIVE_POSITIVE_RATIO = 1.0
+EPOCHS = 2
+#NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None
