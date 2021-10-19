@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-3f-muril-ls2-5e6-c1-ext-diff'
+my_model_dataset = 'chaii-3f-muril-ls2-5e6-2ep-c1-ext-diff'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/external_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -22,7 +22,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = '3f_muril_ls2_5e6_c1_ext_diff'
+    model_save = '3f_muril_ls2_5e6_2ep_c1_ext_diff'
     
     TRAINING_FILE = f'/content/{repo_name}/data/external_dropped.csv'
     VALID_FILE = f'/content/{repo_name}/data/3f_train_folds_external_cleaned_dropped.csv'
@@ -32,7 +32,7 @@ else: #colab
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
 
-    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-large-cased-squad2-1ep-5e6'
+    MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-large-cased-squad2-2ep-5e6'
 
 # Model params
 SEEDS = [43, 1101, 2022]
