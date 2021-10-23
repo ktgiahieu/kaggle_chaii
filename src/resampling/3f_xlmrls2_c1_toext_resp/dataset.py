@@ -7,6 +7,21 @@ import config
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
+def separate_sampling(features):
+    comp_features = []
+    ext_features = []
+    for i in range(len(features)):
+        feature = features[i]
+        if feature['df_kfold'] == -1:
+            ext_features.append(feature)
+        else:
+            comp_features.append(feature)
+    print(f"num_all_features: {len(features)}")
+    print(f"num_ext_features: {len(ext_features)}")
+    print(f"num_comp_features: {len(comp_features)}")
+    return comp_features, ext_features
+
+
 def uniform_negative_sampling(features):
     sampled_features = []
     current_document_features = []
@@ -203,6 +218,7 @@ class ChaiiDataset:
         self.mode = mode
         self.features = None
         self.sampled_features = None
+        self.comp_features, self.ext_features = separate_sampling(self.features)
         if hns_features is not None:
             self.features = hns_features
             self.sampled_features = hard_negative_sampling(self.features)
@@ -211,18 +227,22 @@ class ChaiiDataset:
             if mode=='train':
                 self.sampled_features = uniform_negative_sampling(self.features)
                 #self.sampled_features = self.features
+            elif mode=='train_hns':
+                self.sampled_features = self.comp_features
         
     def __len__(self):
-        return len(self.sampled_features) if self.mode == 'train' else len(self.features)
+        return len(self.sampled_features) if (self.mode == 'train' or self.mode == 'train_hns') else len(self.features)
 
     def resample_hns(self, hns_features):
         self.sampled_features = hard_negative_sampling(hns_features)
+        self.sampled_features.extend(self.ext_features)
+        print(f"sampled_features_with_ext: {len(self.sampled_features)}")
 
     def __getitem__(self, item):
         """Returns preprocessed data sample as dict with
         data converted to tensors.
         """
-        if self.mode == 'train':
+        if self.mode == 'train' or self.mode == 'train_hns':
             data = self.sampled_features[item]
 
             return {'ids': torch.tensor(data['ids'], dtype=torch.long),

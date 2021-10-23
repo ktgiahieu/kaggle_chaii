@@ -39,12 +39,13 @@ def run(fold, seed):
 
     train_dataset_for_hns = dataset.ChaiiDataset(
         fold=fold,
+        df_kfolds=df_train.kfold.values,
         ids=df_train.id.values,
         contexts=df_train.context.values,
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
         answer_starts=df_train.answer_start.values,
-        mode='valid')
+        mode='train_hns')
 
     train_data_loader_for_hns = torch.utils.data.DataLoader(
         train_dataset_for_hns,
@@ -56,6 +57,7 @@ def run(fold, seed):
 
     valid_dataset = dataset.ChaiiDataset(
         fold=fold,
+        df_kfolds=df_train.kfold.values,
         ids=df_valid.id.values,
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
