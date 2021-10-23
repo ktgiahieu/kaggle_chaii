@@ -28,6 +28,7 @@ def run():
     model_config.output_hidden_states = True
 
     test_dataset = dataset.ChaiiDataset(
+        fold=0,
         ids=df_test.id.values,
         contexts=df_test.context.values,
         questions=df_test.question.values,
@@ -43,22 +44,20 @@ def run():
     
     predicted_labels_start = []
     predicted_labels_end = []
-    all_models = []
-    for seed in config.SEEDS:
-        model = models.ChaiiModel(conf=model_config)
+
+    for i in range(config.N_FOLDS):  
+        seed = config.SEEDS[i]
+        model = models.ChaiiModel(conf=model_config, fold=i)
         model.to(device)
         model.eval()
-        all_models.append(model)
-    for i in range(config.N_FOLDS):  
-        for s, seed in enumerate(config.SEEDS):
-            if config.is_kaggle:
-                if i<=2:
-                    model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i}_{seed}.bin'
-                else:
-                    model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i}_{seed}.bin'
+        if config.is_kaggle:
+            if i<=2:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i}_{seed}.bin'
             else:
-                model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
-            all_models[s].load_state_dict(torch.load(model_path, map_location="cuda"))
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i}_{seed}.bin'
+        else:
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+        model.load_state_dict(torch.load(model_path, map_location="cuda"))
 
         predicted_labels_per_fold_start = []
         predicted_labels_per_fold_end = []
@@ -75,17 +74,7 @@ def run():
                 start_labels = start_labels.to(device, dtype=torch.float)
                 end_labels = start_labels.to(device, dtype=torch.float)
 
-
-                outputs_seeds_start = []
-                outputs_seeds_end = []
-                for s in range(len(config.SEEDS)):
-                    outputs_start, outputs_end = all_models[s](ids=ids, mask=mask)
-
-                    outputs_seeds_start.append(outputs_start)
-                    outputs_seeds_end.append(outputs_end)
-
-                outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
-                outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
+                outputs_start, outputs_end = model(ids=ids, mask=mask)
 
                 outputs_start = outputs_start.cpu().detach()
                 outputs_end = outputs_end.cpu().detach()
@@ -100,6 +89,10 @@ def run():
 
         predicted_labels_start.append(predicted_labels_per_fold_start)
         predicted_labels_end.append(predicted_labels_per_fold_end)
+
+        del model
+        torch.cuda.empty_cache()
+        gc.collect()
     
     # Raw predictions
     predicted_labels_start = torch.stack(
@@ -110,20 +103,27 @@ def run():
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
 
+    #Post process 
+    # Baseline
+    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
+    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
+    #predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
+    #                                               (predicted_labels_start, predicted_labels_end))
     # Heatmap 
-    heatmap_logit = utils.postprocess_heatmap_logit(df_test, test_dataset.features, 
+    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
+
+
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
         
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(heatmap_logit, handle)
+        pickle.dump(predictions, handle)
 
     del test_dataset
     del data_loader
-    del all_models
     torch.cuda.empty_cache()
     gc.collect()
 
