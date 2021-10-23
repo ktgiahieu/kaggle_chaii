@@ -23,6 +23,7 @@ def run(fold, seed):
 
     train_dataset = dataset.ChaiiDataset(
         fold=fold,
+        df_kfolds=df_train.kfold.values,
         ids=df_train.id.values,
         contexts=df_train.context.values,
         questions=df_train.question.values,
@@ -30,14 +31,33 @@ def run(fold, seed):
         answer_starts=df_train.answer_start.values,
         mode='train')
 
-    train_data_loader = torch.utils.data.DataLoader(
-        train_dataset,
+    #train_data_loader = torch.utils.data.DataLoader(
+    #    train_dataset,
+    #    batch_size=config.TRAIN_BATCH_SIZE,
+    #    num_workers=4,
+    #    shuffle=True)
+
+    train_dataset_for_hns = dataset.ChaiiDataset(
+        fold=fold,
+        df_kfolds=df_train.kfold.values,
+        ids=df_train.id.values,
+        contexts=df_train.context.values,
+        questions=df_train.question.values,
+        answers=df_train.answer_text.values,
+        answer_starts=df_train.answer_start.values,
+        mode='train_hns')
+
+    train_data_loader_for_hns = torch.utils.data.DataLoader(
+        train_dataset_for_hns,
         batch_size=config.TRAIN_BATCH_SIZE,
         num_workers=4,
         shuffle=True)
 
+
+
     valid_dataset = dataset.ChaiiDataset(
         fold=fold,
+        df_kfolds=df_train.kfold.values,
         ids=df_valid.id.values,
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
@@ -45,11 +65,11 @@ def run(fold, seed):
         answer_starts=df_valid.answer_start.values,
         mode='valid')
 
-    valid_data_loader = torch.utils.data.DataLoader(
-        valid_dataset,
-        batch_size=config.VALID_BATCH_SIZE,
-        num_workers=4,
-        shuffle=False)
+    #valid_data_loader = torch.utils.data.DataLoader(
+    #    valid_dataset,
+    #    batch_size=config.VALID_BATCH_SIZE,
+    #    num_workers=4,
+    #    shuffle=False)
 
     device = torch.device('cuda')
     model_config = config.CONF
@@ -91,8 +111,8 @@ def run(fold, seed):
 
     print(f'Training is starting for fold={fold}')
 
-    score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
-                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
+    score = engine.train_fn(train_dataset, valid_dataset, model, optimizer,
+                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, train_data_loader_for_hns = train_data_loader_for_hns)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()

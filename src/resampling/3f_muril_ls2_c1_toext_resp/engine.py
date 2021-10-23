@@ -25,13 +25,30 @@ def classifier_loss_fn(logits, labels):
     loss = loss_fct(m(logits), labels)
     return loss
 
-def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
+def train_fn(train_dataset, valid_dataset, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, train_data_loader_for_hns=None):  
     model_path_filename = model_path.split('/')[-1]
     best_val_score = None
     step = 0
     last_eval_step = 0
+    hns_features = None
     eval_period = config.EVAL_SCHEDULE[0][1]   
+
+    valid_data_loader = torch.utils.data.DataLoader(
+        valid_dataset,
+        batch_size=config.VALID_BATCH_SIZE,
+        num_workers=4,
+        shuffle=False)
+
     for epoch in range(config.EPOCHS):
+        if hns_features is not None:
+            train_dataset.resample_hns(hns_features)
+
+        train_data_loader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=config.TRAIN_BATCH_SIZE,
+            num_workers=4,
+            shuffle=True)
+
         losses = utils.AverageMeter()
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
@@ -105,6 +122,8 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
         if not config.is_kaggle: #colab
             copyfile(f'./{model_path_filename}', model_path)
             print("Copied best checkpoint to google drive.")
+
+        hns_features = get_hns_features(train_data_loader_for_hns, valid_dataset, model, device)
     return best_val_score
 
 # IN PROGRESS
@@ -119,14 +138,17 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
+            classifier_labels = start_labels[:,0] == 0
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             outputs_start, outputs_end = model(ids=ids, mask=mask)
-        
+
+            #Continue with outputs start/end
             loss = loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
             outputs_start = outputs_start.cpu().detach()
@@ -164,3 +186,48 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
     return eval_score
+
+# IN PROGRESS
+def get_hns_features(train_data_loader_for_hns, valid_dataset, model, device):
+    print("Creating hns features.....")
+    model.eval()
+    losses = utils.AverageMeter()
+    true_labels_cls = []
+    predicted_labels_cls = []
+    with torch.no_grad():
+        for bi, d in enumerate(train_data_loader_for_hns):
+            ids = d['ids']
+            mask = d['mask']
+            start_labels = d['start_labels']
+            end_labels = d['end_labels']
+            classifier_labels = start_labels[:,0] == 0
+
+            ids = ids.to(device, dtype=torch.long)
+            mask = mask.to(device, dtype=torch.long)
+            start_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = start_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
+
+            outputs_start, outputs_end = model(ids=ids, mask=mask)
+
+            # HNS features
+            outputs_cls = 1 - (torch.softmax(outputs_start[:,:-1],dim=1)[:,0] + torch.softmax(outputs_end[:,:-1],dim=1)[:,0])/2
+
+            if len(outputs_cls.size()) > 1:
+                outputs_cls = outputs_cls.squeeze(-1)
+            outputs_cls = outputs_cls.cpu().detach().numpy() # 0 - 1
+
+            if len(classifier_labels.size()) > 1:
+                classifier_labels = classifier_labels.squeeze(-1)
+            classifier_labels = classifier_labels.cpu().detach().numpy()
+            
+            true_labels_cls.extend(classifier_labels.tolist())
+            predicted_labels_cls.extend(outputs_cls.tolist())
+
+    hns_features = valid_dataset.features
+    for i,feature in enumerate(hns_features):
+        feature['true_labels'] = true_labels_cls[i]
+        feature['predicted_labels'] = predicted_labels_cls[i]
+        hns_features[i] = feature
+
+    return hns_features
