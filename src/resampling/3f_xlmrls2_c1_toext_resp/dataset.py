@@ -38,7 +38,7 @@ def uniform_negative_sampling(features):
         current_document_features = []
         current_document_features.append(feature)
 
-    probs = [x['predicted_labels'] for x in current_document_features]
+    probs = [1 for x in current_document_features]
     norm_probs = [float(x)/sum(probs) for x in probs]
     for i, document_feature in enumerate(current_document_features):
         if random.random() < norm_probs[i]*config.NEGATIVE_POSITIVE_RATIO:
