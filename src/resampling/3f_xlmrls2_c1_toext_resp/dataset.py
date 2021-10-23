@@ -8,6 +8,7 @@ import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
 def separate_sampling(features):
+    print("Separating comp and ext features...")
     comp_features = []
     ext_features = []
     for i in range(len(features)):
@@ -23,6 +24,7 @@ def separate_sampling(features):
 
 
 def uniform_negative_sampling(features):
+    print("Uniform negative sampling features...")
     sampled_features = []
     current_document_features = []
     num_ext_features = 0
@@ -66,6 +68,7 @@ def uniform_negative_sampling(features):
     return sampled_features
 
 def hard_negative_sampling(hns_features):
+    print("Hard negative sampling features...")
     sampled_features = []
     current_document_features = []
     for i in range(len(hns_features)):
