@@ -25,7 +25,7 @@ def classifier_loss_fn(logits, labels):
     loss = loss_fct(m(logits), labels)
     return loss
 
-def train_fn(train_dataset, valid_dataset, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, train_data_loader_for_hns=None):  
+def train_fn(train_dataset, valid_dataset, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, train_data_loader_for_hns=None, train_dataset_for_hns=None):  
     model_path_filename = model_path.split('/')[-1]
     best_val_score = None
     step = 0
@@ -123,7 +123,7 @@ def train_fn(train_dataset, valid_dataset, model, optimizer, device, writer, mod
             copyfile(f'./{model_path_filename}', model_path)
             print("Copied best checkpoint to google drive.")
 
-        hns_features = get_hns_features(train_data_loader_for_hns, valid_dataset, model, device)
+        hns_features = get_hns_features(train_data_loader_for_hns, train_dataset_for_hns, valid_dataset, model, device)
     return best_val_score
 
 # IN PROGRESS
@@ -188,7 +188,7 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     return eval_score
 
 # IN PROGRESS
-def get_hns_features(train_data_loader_for_hns, valid_dataset, model, device):
+def get_hns_features(train_data_loader_for_hns, train_dataset_for_hns, valid_dataset, model, device):
     print("Creating hns features.....")
     model.eval()
     losses = utils.AverageMeter()
@@ -224,7 +224,7 @@ def get_hns_features(train_data_loader_for_hns, valid_dataset, model, device):
             true_labels_cls.extend(classifier_labels.tolist())
             predicted_labels_cls.extend(outputs_cls.tolist())
 
-    hns_features = valid_dataset.features
+    hns_features = train_dataset_for_hns.sampled_features
     for i,feature in enumerate(hns_features):
         feature['true_labels'] = true_labels_cls[i]
         feature['predicted_labels'] = predicted_labels_cls[i]

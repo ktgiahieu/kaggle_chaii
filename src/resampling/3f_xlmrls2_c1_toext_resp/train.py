@@ -112,7 +112,7 @@ def run(fold, seed):
     print(f'Training is starting for fold={fold}')
 
     score = engine.train_fn(train_dataset, valid_dataset, model, optimizer,
-                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, train_data_loader_for_hns = train_data_loader_for_hns)
+                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, train_data_loader_for_hns = train_data_loader_for_hns, train_dataset_for_hns=train_dataset_for_hns)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()
