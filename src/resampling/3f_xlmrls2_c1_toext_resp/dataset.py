@@ -7,18 +7,47 @@ import config
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
-def uniform_negative_sampling(features, num_positive):
-    num_negative = len(features) - num_positive
-    num_negative_preferred = num_positive * config.NEGATIVE_POSITIVE_RATIO
-    negative_sampling_rate = num_negative_preferred / num_negative
+def uniform_negative_sampling(features):
     sampled_features = []
+    current_document_features = []
+    num_ext_features = 0
+    num_pos_comp_features = 0
     for i in range(len(features)):
         feature = features[i]
-        if feature['classifier_labels'] == [1] or random.random() < negative_sampling_rate:
+        if feature['df_kfold'] == -1:
+            num_ext_features += 1
             sampled_features.append(feature)
-    print(f"len(sampled_features): {len(sampled_features)}")
-    print(f"num_negative: {num_negative}")
-    print(f"num_negative_preferred: {num_negative_preferred}")
+            continue
+        if feature['classifier_labels'] == [1]:
+            num_pos_comp_features += 1
+            sampled_features.append(feature)
+            continue
+        if len(current_document_features)==0:
+            current_document_features.append(feature)
+            continue
+        if current_document_features[0]['example_ids'] == feature['example_ids']:
+            current_document_features.append(feature)
+            continue
+
+        probs = [1 for x in current_document_features]
+        norm_probs = [float(x)/sum(probs) for x in probs]
+        for i, document_feature in enumerate(current_document_features):
+            if random.random() < norm_probs[i]*config.NEGATIVE_POSITIVE_RATIO:
+                sampled_features.append(document_feature)
+
+        current_document_features = []
+        current_document_features.append(feature)
+
+    probs = [x['predicted_labels'] for x in current_document_features]
+    norm_probs = [float(x)/sum(probs) for x in probs]
+    for i, document_feature in enumerate(current_document_features):
+        if random.random() < norm_probs[i]*config.NEGATIVE_POSITIVE_RATIO:
+            sampled_features.append(document_feature)
+    print(f"num_all_features: {len(features)}")
+    print(f"num_ext_features: {num_ext_features}")
+    print(f"num_positive_comp_features: {num_pos_comp_features}")
+    print(f"num_negative_comp_features: {len(sampled_features)-num_pos_comp_features-num_ext_features}")
+    print(f"num_sampled_features: {len(sampled_features)}")
     return sampled_features
 
 def hard_negative_sampling(hns_features):
@@ -62,9 +91,9 @@ def jaccard_array(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts, fold):
+def preprocess_data(tokenizer, df_kfolds, ids, contexts, questions, answers, answer_starts, fold):
     features = []
-    for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
+    for df_kfold, id, context, question, answer, answer_start in zip(df_kfolds, ids, contexts, questions, answers, answer_starts):
         question = question.strip()
         tokenized_example = tokenizer(
             question,
@@ -88,6 +117,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts,
 
             if answer == '':
                 feature = {'example_ids': id,
+                       'df_kfold': df_kfold,
                        'ids': input_ids,
                        'mask': attention_mask,
                        'start_labels': [0],
@@ -153,6 +183,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts,
                 classifier_labels = 1
 
             feature = {'example_ids': id,
+                       'df_kfold': df_kfold,
                        'ids': input_ids,
                        'mask': attention_mask,
                        'offsets': offsets,
@@ -166,7 +197,7 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts,
 
 
 class ChaiiDataset:
-    def __init__(self, fold, ids, contexts, questions, answers, answer_starts, mode='train', hns_features=None):
+    def __init__(self, fold, df_kfolds, ids, contexts, questions, answers, answer_starts, mode='train', hns_features=None):
         self.fold = fold
         self.tokenizer = config.TOKENIZER
         self.mode = mode
@@ -176,9 +207,9 @@ class ChaiiDataset:
             self.features = hns_features
             self.sampled_features = hard_negative_sampling(self.features)
         else:
-            self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, fold)
+            self.features = preprocess_data(self.tokenizer, df_kfolds, ids, contexts, questions, answers, answer_starts, fold)
             if mode=='train':
-                self.sampled_features = uniform_negative_sampling(self.features, len(ids))
+                self.sampled_features = uniform_negative_sampling(self.features)
                 #self.sampled_features = self.features
         
     def __len__(self):

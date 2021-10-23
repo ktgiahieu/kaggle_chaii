@@ -23,6 +23,7 @@ def run(fold, seed):
 
     train_dataset = dataset.ChaiiDataset(
         fold=fold,
+        df_kfolds=df_train.kfold.values,
         ids=df_train.id.values,
         contexts=df_train.context.values,
         questions=df_train.question.values,
