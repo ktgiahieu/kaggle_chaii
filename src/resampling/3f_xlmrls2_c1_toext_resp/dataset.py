@@ -212,23 +212,21 @@ def preprocess_data(tokenizer, df_kfolds, ids, contexts, questions, answers, ans
 
 
 class ChaiiDataset:
-    def __init__(self, fold, df_kfolds, ids, contexts, questions, answers, answer_starts, mode='train', hns_features=None):
+    def __init__(self, fold, df_kfolds, ids, contexts, questions, answers, answer_starts, mode='train'):
         self.fold = fold
         self.tokenizer = config.TOKENIZER
         self.mode = mode
         self.features = None
         self.sampled_features = None
+
+        self.features = preprocess_data(self.tokenizer, df_kfolds, ids, contexts, questions, answers, answer_starts, fold)
+        
         self.comp_features, self.ext_features = separate_sampling(self.features)
-        if hns_features is not None:
-            self.features = hns_features
-            self.sampled_features = hard_negative_sampling(self.features)
-        else:
-            self.features = preprocess_data(self.tokenizer, df_kfolds, ids, contexts, questions, answers, answer_starts, fold)
-            if mode=='train':
-                self.sampled_features = uniform_negative_sampling(self.features)
-                #self.sampled_features = self.features
-            elif mode=='train_hns':
-                self.sampled_features = self.comp_features
+        if mode=='train':
+            self.sampled_features = uniform_negative_sampling(self.features)
+            #self.sampled_features = self.features
+        elif mode=='train_hns':
+            self.sampled_features = self.comp_features
         
     def __len__(self):
         return len(self.sampled_features) if (self.mode == 'train' or self.mode == 'train_hns') else len(self.features)
