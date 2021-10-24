@@ -236,8 +236,8 @@ class ChaiiDataset:
 
     def resample_hns(self, hns_features):
         self.sampled_features = hard_negative_sampling(hns_features)
-        #self.sampled_features.extend(self.ext_features)
-        print(f"sampled_features_with_no_ext: {len(self.sampled_features)}")
+        self.sampled_features.extend(self.ext_features)
+        print(f"sampled_features_with_ext: {len(self.sampled_features)}")
 
     def __getitem__(self, item):
         """Returns preprocessed data sample as dict with
