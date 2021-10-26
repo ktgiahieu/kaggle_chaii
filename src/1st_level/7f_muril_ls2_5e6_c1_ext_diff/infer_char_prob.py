@@ -19,7 +19,6 @@ def run():
     df_test = pd.read_csv(config.TEST_FILE)
     df_test.loc[:, 'answer_start'] = 0
     df_test.loc[:, 'answer_text'] = ''
-    df_test['kfold'] = 0
     df_test['context'] = df_test['context'].apply(lambda x: ' '.join(x.split()))
     df_test['question'] = df_test['question'].apply(lambda x: ' '.join(x.split()))
 
@@ -30,7 +29,6 @@ def run():
 
     test_dataset = dataset.ChaiiDataset(
         fold=0,
-        df_kfolds=df_test.kfold.values,
         ids=df_test.id.values,
         contexts=df_test.context.values,
         questions=df_test.question.values,
@@ -107,7 +105,7 @@ def run():
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
 
     # Heatmap 
-    heatmap_logit = utils.postprocess_heatmap_logit(df_test, test_dataset.features, 
+    char_prob = utils.postprocess_char_prob(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
@@ -115,7 +113,7 @@ def run():
         
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(heatmap_logit, handle)
+        pickle.dump(char_prob, handle)
 
     del test_dataset
     del data_loader

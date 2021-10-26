@@ -30,7 +30,7 @@ def run():
 
     test_dataset = dataset.ChaiiDataset(
         fold=0,
-        df_kfold=df_test.kfold.values,
+        df_kfolds=df_test.kfold.values,
         ids=df_test.id.values,
         contexts=df_test.context.values,
         questions=df_test.question.values,
