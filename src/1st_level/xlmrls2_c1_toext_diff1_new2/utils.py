@@ -569,5 +569,5 @@ def create_optimizer(model):
                            "lr": lr})
         last_lr = lr
         
-    return AdamP(parameters, eps=1e-08)
+    return SGDP(parameters, eps=1e-08)
 #     return torch.optim.AdamW(parameters, eps=1e-08)
