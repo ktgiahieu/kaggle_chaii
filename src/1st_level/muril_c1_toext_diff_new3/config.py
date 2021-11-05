@@ -57,7 +57,7 @@ CONF = AutoConfig.from_pretrained(
 N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
-SOFT_ALPHA = [0, 0, 0, 0, 0]
+SOFT_ALPHA = [0.2, 0.2, 0.2, 0.2, 0.2]
 WARMUP_RATIO = 0.1
 
 USE_SWA = False
