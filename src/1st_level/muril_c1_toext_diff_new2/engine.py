@@ -22,7 +22,7 @@ def loss_fn(start_logits, end_logits, classifier_logits,
 
     print(total_loss)
     print(classifier_loss)
-    return total_loss*0.9 + 0.1*classifier_loss
+    return total_loss + 0.025*classifier_loss
 
 def classifier_loss_fn(logits, labels):
     m = torch.nn.Sigmoid()
