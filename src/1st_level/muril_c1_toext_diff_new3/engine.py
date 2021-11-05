@@ -10,14 +10,14 @@ import utils
 
 from string import punctuation
 
-def loss_fn(start_logits, end_logits, variance,
+def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     m = torch.nn.LogSoftmax(dim=1)
-    loss_fct = torch.nn.KLDivLoss(reduction='none')
+    loss_fct = torch.nn.KLDivLoss()
     start_loss = loss_fct(m(start_logits), start_positions)
+    print(start_positions[0])
     end_loss = loss_fct(m(end_logits), end_positions)
-    total_loss = torch.mean(-torch.log(1e-12+torch.exp(-(start_loss + end_loss)/variance) / (2*variance)))
-    print(variance, (start_loss + end_loss))
+    total_loss = (start_loss + end_loss)
     return total_loss
 
 def classifier_loss_fn(logits, labels):
@@ -49,9 +49,9 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
 
             model.train()
             
-            outputs_start, outputs_end, variance = model(ids=ids, mask=mask)
+            outputs_start, outputs_end = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end, variance,
+            loss = loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
 
             losses.update(loss.item(), ids.size(0))
@@ -61,7 +61,6 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             loss.backward()
 
             if (bi+1) % config.ACCUMULATION_STEPS    == 0:             # Wait for several backward steps
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 50)
                 optimizer.step()                            # Now we can do an optimizer step
                 scheduler.step()
                 model.zero_grad()                           # Reset gradients tensors
@@ -127,9 +126,9 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
 
-            outputs_start, outputs_end, variance = model(ids=ids, mask=mask)
+            outputs_start, outputs_end = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end, variance,
+            loss = loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
             outputs_start = outputs_start.cpu().detach()
             outputs_end = outputs_end.cpu().detach()
