@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
-EPOCHS = 2
+EPOCHS = 1
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
