@@ -54,7 +54,7 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
+#N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
 SOFT_ALPHA = [0.6, 1.0, 0.9, 0.8, 0.7]
