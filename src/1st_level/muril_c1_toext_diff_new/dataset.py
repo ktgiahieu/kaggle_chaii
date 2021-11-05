@@ -136,14 +136,14 @@ def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts,
                 start_labels = np.zeros(n)
                 for i in range(token_answer_start_index, targets_end + 1):
                     jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
-                    start_labels[i] = jac + jac ** 2
+                    start_labels[i] = jac
                 start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                 start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
                 end_labels = np.zeros(n)
                 for i in range(targets_start, token_answer_end_index + 1):
                     jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
-                    end_labels[i] = jac + jac ** 2
+                    end_labels[i] = jac
                 end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
                 end_labels[targets_end] += config.SOFT_ALPHA[fold]
 

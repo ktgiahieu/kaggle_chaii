@@ -7,6 +7,7 @@ import torch
 import torchcontrib
 from torch.utils.tensorboard import SummaryWriter
 writer = None
+from torch_optimizer import Lookahead
 
 import config
 import dataset
@@ -74,6 +75,7 @@ def run(fold, seed):
                     if any(nd in n for nd in no_decay)],
          'weight_decay': 0.0}]
     base_opt = utils.create_optimizer(model)
+    base_opt = Lookahead(base_opt, k=5, alpha=0.5) # Initialize Lookahead
     optimizer = torchcontrib.optim.SWA(
         base_opt,
         swa_start=int(num_train_steps * config.SWA_RATIO),
