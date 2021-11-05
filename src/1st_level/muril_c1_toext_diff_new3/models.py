@@ -12,7 +12,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
             config=conf)
 
         self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(conf.hidden_size*2, conf.hidden_size),
+            torch.nn.Linear(conf.hidden_size, conf.hidden_size),
             torch.nn.GELU(),
             torch.nn.Linear(conf.hidden_size, 2),
         )
