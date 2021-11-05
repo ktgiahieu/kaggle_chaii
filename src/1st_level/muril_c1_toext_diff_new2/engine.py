@@ -125,9 +125,9 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
 
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs_start, outputs_end, variance = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
+            loss = loss_fn(outputs_start, outputs_end, variance,
                            start_labels, end_labels)
             outputs_start = outputs_start.cpu().detach()
             outputs_end = outputs_end.cpu().detach()
