@@ -44,7 +44,9 @@ class ChaiiModel(transformers.BertPreTrainedModel):
 
         # Mean-max pooler
         high_level_hidden_state = out.last_hidden_state
-        combined_hidden_state = torch.cat([low_level_hidden_state.expand(-1, high_level_hidden_state.shape[1], -1), high_level_hidden_state], dim=-1)
+        combined_hidden_state = torch.cat([
+            torch.unsqueeze(low_level_hidden_state, dim=1).expand(-1, high_level_hidden_state.shape[1], -1), 
+            high_level_hidden_state], dim=-1)
 
         # Multisample Dropout: https://arxiv.org/abs/1905.09788
         logits = torch.mean(torch.stack([
