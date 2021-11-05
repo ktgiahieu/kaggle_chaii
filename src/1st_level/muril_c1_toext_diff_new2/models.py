@@ -19,7 +19,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
 
         self.detect_answer_classifier = torch.nn.Sequential(
             torch.nn.Linear(conf.hidden_size, conf.hidden_size),
-            torch.nn.tanh(),
+            torch.nn.Tanh(),
             torch.nn.Linear(conf.hidden_size, 1),
         )
 
