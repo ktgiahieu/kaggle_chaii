@@ -20,7 +20,7 @@ def loss_fn(start_logits, end_logits, classifier_logits,
 
     classifier_loss = torch.nn.BCEWithLogitsLoss()(classifier_logits, classifier_labels)
 
-    return total_loss + 0.025*classifier_loss
+    return total_loss + 0.*classifier_loss
 
 def classifier_loss_fn(logits, labels):
     m = torch.nn.Sigmoid()
