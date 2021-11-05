@@ -39,13 +39,12 @@ class ChaiiModel(transformers.BertPreTrainedModel):
         out = self.automodel(ids, attention_mask=mask)
 
         #Detect answer classifier
-        low_level_hidden_state = torch.unsqueeze(out.hidden_states[-6 -1][:,0,:], dim=1)
-        print(low_level_hidden_state.shape)
-        classifier_logits = self.detect_answer_classifier(low_level_hidden_state).squeeze(-1)
+        low_level_hidden_state = out.hidden_states[-6 -1][:,0,:]
+        classifier_logits = self.detect_answer_classifier(low_level_hidden_state)
 
         # Mean-max pooler
         high_level_hidden_state = out.last_hidden_state
-        combined_hidden_state = torch.cat([low_level_hidden_state, high_level_hidden_state], dim=-1)
+        combined_hidden_state = torch.cat([low_level_hidden_state.expand(-1, high_level_hidden_state.shape[1], -1), high_level_hidden_state], dim=-1)
 
         # Multisample Dropout: https://arxiv.org/abs/1905.09788
         logits = torch.mean(torch.stack([
