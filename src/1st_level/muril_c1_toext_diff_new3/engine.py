@@ -60,6 +60,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             loss.backward()
 
             if (bi+1) % config.ACCUMULATION_STEPS    == 0:             # Wait for several backward steps
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 50)
                 optimizer.step()                            # Now we can do an optimizer step
                 scheduler.step()
                 model.zero_grad()                           # Reset gradients tensors
