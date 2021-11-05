@@ -36,7 +36,7 @@ else: #colab
 # Model params
 SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
-EPOCHS = 5
+EPOCHS = 2
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 PATIENCE = None
@@ -54,10 +54,10 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
+#N_LAST_HIDDEN = [ 8, 10,  6,  9, 12]
 BERT_DROPOUT = 0.1
 HIGH_DROPOUT = [0.35, 0.5, 0.45, 0.4, 0.3]
-SOFT_ALPHA = [0.2, 0.2, 0.2, 0.2, 0.2]
+SOFT_ALPHA = [0.6, 1.0, 0.9, 0.8, 0.7]
 WARMUP_RATIO = 0.1
 
 USE_SWA = False
@@ -71,7 +71,7 @@ EVAL_SCHEDULE = [
 
 
 #Layer wise learning rate
-HEAD_LEARNING_RATE = 1e-5
+HEAD_LEARNING_RATE = 3e-5
 LEARNING_RATE_LAYERWISE_TYPE = 'exponential' #'linear' or 'exponential'
-LEARNING_RATES_RANGE = [3e-6, 9e-6]
+LEARNING_RATES_RANGE = [3e-5, 3e-5]
 WEIGHT_DECAY = 0.001

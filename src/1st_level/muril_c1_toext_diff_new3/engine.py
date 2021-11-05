@@ -10,14 +10,17 @@ import utils
 
 from string import punctuation
 
-def loss_fn(start_logits, end_logits,
-            start_positions, end_positions):
+def loss_fn(start_logits, end_logits, classifier_logits,
+            start_positions, end_positions, classifier_labels):
     m = torch.nn.LogSoftmax(dim=1)
     loss_fct = torch.nn.KLDivLoss()
     start_loss = loss_fct(m(start_logits), start_positions)
     end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = (start_loss + end_loss)
-    return total_loss
+
+    classifier_loss = torch.nn.BCEWithLogitsLoss()(classifier_logits, classifier_labels)
+
+    return total_loss + 0.025*classifier_loss
 
 def classifier_loss_fn(logits, labels):
     m = torch.nn.Sigmoid()
@@ -40,18 +43,21 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
+            classifier_labels = d['classifier_labels']
+
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = end_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             model.train()
             
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs_start, outputs_end, classifier_outputs = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
+            loss = loss_fn(outputs_start, outputs_end, classifier_outputs,
+                           start_labels, end_labels, classifier_labels)
 
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
@@ -119,16 +125,19 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
+            classifier_labels = d['classifier_labels']
+
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
-            end_labels = start_labels.to(device, dtype=torch.float)
+            end_labels = end_labels.to(device, dtype=torch.float)
+            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs_start, outputs_end, classifier_outputs = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
+            loss = loss_fn(outputs_start, outputs_end, classifier_outputs,
+                           start_labels, end_labels, classifier_labels)
             outputs_start = outputs_start.cpu().detach()
             outputs_end = outputs_end.cpu().detach()
 
