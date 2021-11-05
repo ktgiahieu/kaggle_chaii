@@ -15,7 +15,6 @@ def loss_fn(start_logits, end_logits,
     m = torch.nn.LogSoftmax(dim=1)
     loss_fct = torch.nn.KLDivLoss()
     start_loss = loss_fct(m(start_logits), start_positions)
-    print(start_positions[0])
     end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = (start_loss + end_loss)
     return total_loss
