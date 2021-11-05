@@ -40,6 +40,7 @@ class ChaiiModel(transformers.BertPreTrainedModel):
 
         #Detect answer classifier
         low_level_hidden_state = out.hidden_states[-6 -1][:,0,:]
+        print(low_level_hidden_state.shape)
         classifier_logits = self.detect_answer_classifier(low_level_hidden_state).squeeze(-1)
 
         # Mean-max pooler
