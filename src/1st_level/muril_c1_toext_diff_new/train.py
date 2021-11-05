@@ -89,10 +89,10 @@ def run(fold, seed):
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')
 
-    print(f'Training is starting for fold={fold}')
+    print(f'Training is starting for fold={fold+1}')
 
     score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
-                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
+                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold+1}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()
@@ -103,10 +103,12 @@ def run(fold, seed):
 if __name__ == '__main__':
     fold_scores = []
     for i in range(config.N_FOLDS):
+        #if i+1 not in [4, 5]:
+        #    continue
         seed = config.SEEDS[i]
         utils.seed_everything(seed=seed)
-        print(f"Training fold {i} with SEED={seed}")
-        writer = SummaryWriter(f"logs/fold{i}_seed{seed}")
+        print(f"Training fold {i+1} with SEED={seed}")
+        writer = SummaryWriter(f"logs/fold{i+1}_seed{seed}")
         fold_score = run(i, seed)
         fold_scores.append(fold_score)
         writer.close()
@@ -114,6 +116,6 @@ if __name__ == '__main__':
     if len(fold_scores)==config.N_FOLDS and fold_scores[0] is not None:
         print('\nScores without SWA:')
         for i in range(config.N_FOLDS):
-            print(f'Fold={i}, Score = {fold_scores[i]}')
+            print(f'Fold={i+1}, Score = {fold_scores[i]}')
         print(f'Mean = {np.mean(fold_scores)}')
         print(f'Std = {np.std(fold_scores)}')
