@@ -17,6 +17,7 @@ def loss_fn(start_logits, end_logits, variance,
     start_loss = loss_fct(m(start_logits), start_positions)
     end_loss = loss_fct(m(end_logits), end_positions)
     total_loss = torch.mean(-torch.log(1e-12+torch.exp(-(start_loss + end_loss)/variance) / (2*variance)))
+    print(variance, (start_loss + end_loss))
     return total_loss
 
 def classifier_loss_fn(logits, labels):
