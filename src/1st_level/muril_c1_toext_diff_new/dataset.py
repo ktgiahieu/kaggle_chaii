@@ -156,7 +156,6 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                             answer_sen_start+=plus
                             break
 
-
                 assert(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]==orig_answer)
 
                 # Shuffle neighbor sentences
