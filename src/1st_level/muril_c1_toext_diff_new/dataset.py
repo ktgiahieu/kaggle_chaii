@@ -112,7 +112,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     total_len+=1
 
             if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
-                for plus in range(-3, 4):
+                for plus in range(-20, 20):
                     if sentences[answer_sen][answer_sen_start+plus:answer_sen_start+plus+len(orig_answer)]==orig_answer:
                         answer_sen_start+=plus
                         break
