@@ -102,11 +102,11 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 if orig_context[total_len] == ' ':
                     total_len+=1
 
-            for _ in range(3):
-                if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
-                    answer_sen_start+=1
-                else:
-                    break
+            if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
+                for plus in range(-3, 4):
+                    if sentences[answer_sen][answer_sen_start+plus:answer_sen_start+plus+len(orig_answer)]==orig_answer:
+                        answer_sen_start+=plus
+                        break
 
             print(sentences[answer_sen])
             print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
