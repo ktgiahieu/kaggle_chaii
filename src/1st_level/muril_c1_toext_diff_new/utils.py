@@ -5,7 +5,6 @@ import collections
 from string import punctuation
 
 import torch
-from adamp import AdamP, SGDP
 import numpy as np
 from scipy.special import softmax
 
@@ -568,5 +567,4 @@ def create_optimizer(model):
                            "weight_decay": weight_decay,
                            "lr": lr})
         last_lr = lr
-    return SGDP(parameters, lr=0.1, weight_decay=1e-5, eps=1e-08, momentum=0.9, nesterov=True)
-    #return torch.optim.AdamW(parameters, eps=1e-08)
+    return torch.optim.AdamW(parameters, eps=1e-08)

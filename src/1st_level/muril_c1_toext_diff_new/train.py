@@ -7,7 +7,6 @@ import torch
 import torchcontrib
 from torch.utils.tensorboard import SummaryWriter
 writer = None
-from torch_optimizer import Lookahead
 
 import config
 import dataset
@@ -29,6 +28,7 @@ def run(fold, seed):
         questions=df_train.question.values,
         answers=df_train.answer_text.values,
         answer_starts=df_train.answer_start.values,
+        languages=df_train.language.values,
         mode='train')
 
     train_data_loader = torch.utils.data.DataLoader(
@@ -44,6 +44,7 @@ def run(fold, seed):
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
         answer_starts=df_valid.answer_start.values,
+        languages=df_train.language.values,
         mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
@@ -75,26 +76,25 @@ def run(fold, seed):
                     if any(nd in n for nd in no_decay)],
          'weight_decay': 0.0}]
     base_opt = utils.create_optimizer(model)
-    base_opt = Lookahead(base_opt, k=5, alpha=0.5) # Initialize Lookahead
     optimizer = torchcontrib.optim.SWA(
         base_opt,
         swa_start=int(num_train_steps * config.SWA_RATIO),
         swa_freq=config.SWA_FREQ,
         swa_lr=None)
-    scheduler = transformers.get_cosine_with_hard_restarts_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
-        num_training_steps=num_train_steps)
-    #scheduler = transformers.get_constant_schedule(
-    #    optimizer=optimizer)
+    #scheduler = transformers.get_linear_schedule_with_warmup(
+    #    optimizer=optimizer,
+    #    num_warmup_steps=int(num_train_steps * config.WARMUP_RATIO),
+    #    num_training_steps=num_train_steps)
+    scheduler = transformers.get_constant_schedule(
+        optimizer=optimizer)
 
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')
 
-    print(f'Training is starting for fold={fold+1}')
+    print(f'Training is starting for fold={fold}')
 
     score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
-                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold+1}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
+                    device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
 
     if config.USE_SWA:
         optimizer.swap_swa_sgd()
@@ -105,12 +105,10 @@ def run(fold, seed):
 if __name__ == '__main__':
     fold_scores = []
     for i in range(config.N_FOLDS):
-        #if i+1 not in [4, 5]:
-        #    continue
         seed = config.SEEDS[i]
         utils.seed_everything(seed=seed)
-        print(f"Training fold {i+1} with SEED={seed}")
-        writer = SummaryWriter(f"logs/fold{i+1}_seed{seed}")
+        print(f"Training fold {i} with SEED={seed}")
+        writer = SummaryWriter(f"logs/fold{i}_seed{seed}")
         fold_score = run(i, seed)
         fold_scores.append(fold_score)
         writer.close()
@@ -118,6 +116,6 @@ if __name__ == '__main__':
     if len(fold_scores)==config.N_FOLDS and fold_scores[0] is not None:
         print('\nScores without SWA:')
         for i in range(config.N_FOLDS):
-            print(f'Fold={i+1}, Score = {fold_scores[i]}')
+            print(f'Fold={i}, Score = {fold_scores[i]}')
         print(f'Mean = {np.mean(fold_scores)}')
         print(f'Std = {np.std(fold_scores)}')

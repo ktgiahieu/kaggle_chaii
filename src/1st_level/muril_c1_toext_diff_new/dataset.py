@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import random
+from indicnlp.tokenize import sentence_tokenize
 
 import config
 
@@ -62,111 +63,168 @@ def jaccard_array(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-def preprocess_data(tokenizer, ids, contexts, questions, answers, answer_starts, fold):
+def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold):
     features = []
-    for id, context, question, answer, answer_start in zip(ids, contexts, questions, answers, answer_starts):
-        question = question.strip()
-        tokenized_example = tokenizer(
-            question,
-            context,
-            truncation="only_second",
-            max_length=config.MAX_LEN,
-            stride=config.DOC_STRIDE,
-            return_overflowing_tokens=True,
-            return_offsets_mapping=True,
-            padding="max_length",
-        )
+    for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
+        orig_question = orig_question.strip()
 
-        offset_mapping = tokenized_example.pop("offset_mapping")
+        all_aug_contexts = [orig_context]
+        all_aug_questions = [orig_question]
+        all_aug_answers = [orig_answer]
+        all_aug_answer_starts = [orig_answer_start]
 
-        for i, offsets in enumerate(offset_mapping):
-            input_ids = tokenized_example["input_ids"][i]
-            attention_mask = tokenized_example["attention_mask"][i]
 
-            cls_index = input_ids.index(tokenizer.cls_token_id)
-            sequence_ids = tokenized_example.sequence_ids(i) #1 for answer, 0 for question, None for special tokens.
+        if random.random() < 1.0:
+            # Split context to sentences
+            sentences=sentence_tokenize.sentence_split(orig_context, lang='hi' if language=='hindi' else 'ta')
 
-            if answer == '':
-                feature = {'example_ids': id,
-                       'ids': input_ids,
-                       'mask': attention_mask,
-                       'start_labels': [0],
-                       'end_labels': [0],
-                       'classifier_labels':[0],
-                       'offsets': offsets,
-                       'sequence_ids': sequence_ids}
-                features.append(feature)
-                continue
+            # Find answer_start in sentences
+            total_len = 0
+            answer_sen = 0
+            answer_sen_start = 0
+            for i_sen, sen in enumerate(sentences):
+              len_sen = len(sen)
+              if orig_answer_start < total_len + len_sen:
+                answer_sen = i_sen
+                answer_sen_start = orig_answer_start - total_len
+                break
+              else:
+                total_len+= len_sen+1
+            assert(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]==orig_answer)
 
-            start_char = answer_start
-            end_char = answer_start + len(answer)
+            # Shuffle neighbor sentences
+            max_seq_len = len(sentences)
+            idx = list(enumerate(sentences))
+            ws = np.random.choice([2, 4, 5])
+            num = max_seq_len // ws
 
-            token_start_index = 0
-            while sequence_ids[token_start_index] != 1:
-                token_start_index += 1
-            token_answer_start_index = token_start_index
+            for i in range(num):
+                sub_list = idx[i * ws:(i + 1) * ws]
+                random.shuffle(sub_list)
+                idx[i * ws:(i + 1) * ws] = sub_list
 
-            token_end_index = len(input_ids) - 1
-            while sequence_ids[token_end_index] != 1:
-                token_end_index -= 1
-            token_answer_end_index = token_end_index
+            indices, sentences_shuffled = zip(*idx)
 
-            if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
-                targets_start = cls_index
-                targets_end = cls_index
+            # Find new answer_start after shuffling
+            new_answer_start = 0
+            total_len = 0
+            for i_sen, sen in zip(indices, sentences_shuffled):
+              len_sen = len(sen)
+              if i_sen == answer_sen:
+                new_answer_start = total_len + answer_sen_start
+              else:
+                total_len += len_sen+1
 
-                start_labels = [1] + [0]*(len(input_ids) - 1)
-                end_labels = [1] + [0]*(len(input_ids) - 1)
+            new_context = ' '.join(sentences_shuffled)
+            assert(new_context[new_answer_start:new_answer_start+len(orig_answer)]==orig_answer)
 
-                classifier_labels = 0
-            else:
-                while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
+            all_aug_contexts.append(new_context)
+            all_aug_questions.append(question)
+            all_aug_answers.append(orig_answer)
+            all_aug_answer_starts.append(new_answer_start)
+
+        for context, question, answer, answer_start in zip(all_aug_contexts, all_aug_questions, all_aug_answers, all_aug_answer_starts):
+            tokenized_example = tokenizer(
+                question,
+                context,
+                truncation="only_second",
+                max_length=config.MAX_LEN,
+                stride=config.DOC_STRIDE,
+                return_overflowing_tokens=True,
+                return_offsets_mapping=True,
+                padding="max_length",
+            )
+
+            offset_mapping = tokenized_example.pop("offset_mapping")
+
+            for i, offsets in enumerate(offset_mapping):
+                input_ids = tokenized_example["input_ids"][i]
+                attention_mask = tokenized_example["attention_mask"][i]
+
+                cls_index = input_ids.index(tokenizer.cls_token_id)
+                sequence_ids = tokenized_example.sequence_ids(i) #1 for answer, 0 for question, None for special tokens.
+
+                if answer == '':
+                    feature = {'example_ids': id,
+                           'ids': input_ids,
+                           'mask': attention_mask,
+                           'start_labels': [0],
+                           'end_labels': [0],
+                           'classifier_labels':[0],
+                           'offsets': offsets,
+                           'sequence_ids': sequence_ids}
+                    features.append(feature)
+                    continue
+
+                start_char = answer_start
+                end_char = answer_start + len(answer)
+
+                token_start_index = 0
+                while sequence_ids[token_start_index] != 1:
                     token_start_index += 1
-                targets_start = token_start_index - 1
-                while offsets[token_end_index][1] >= end_char:
+                token_answer_start_index = token_start_index
+
+                token_end_index = len(input_ids) - 1
+                while sequence_ids[token_end_index] != 1:
                     token_end_index -= 1
-                targets_end = token_end_index + 1
+                token_answer_end_index = token_end_index
 
-                # Soft Jaccard labels
-                # ----------------------------------
-                n = len(input_ids)
-                sentence_array = np.arange(n)
-                answer_array = sentence_array[targets_start:targets_end + 1]
+                if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
+                    targets_start = cls_index
+                    targets_end = cls_index
 
-                start_labels = np.zeros(n)
-                for i in range(token_answer_start_index, targets_end + 1):
-                    jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
-                    start_labels[i] = jac
-                start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
-                start_labels[targets_start] += config.SOFT_ALPHA[fold]
+                    start_labels = [1] + [0]*(len(input_ids) - 1)
+                    end_labels = [1] + [0]*(len(input_ids) - 1)
 
-                end_labels = np.zeros(n)
-                for i in range(targets_start, token_answer_end_index + 1):
-                    jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
-                    end_labels[i] = jac
-                end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
-                end_labels[targets_end] += config.SOFT_ALPHA[fold]
+                    classifier_labels = 0
+                else:
+                    while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
+                        token_start_index += 1
+                    targets_start = token_start_index - 1
+                    while offsets[token_end_index][1] >= end_char:
+                        token_end_index -= 1
+                    targets_end = token_end_index + 1
 
-                start_labels = list(start_labels)
-                end_labels = list(end_labels)
+                    # Soft Jaccard labels
+                    # ----------------------------------
+                    n = len(input_ids)
+                    sentence_array = np.arange(n)
+                    answer_array = sentence_array[targets_start:targets_end + 1]
 
-                classifier_labels = 1
+                    start_labels = np.zeros(n)
+                    for i in range(token_answer_start_index, targets_end + 1):
+                        jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
+                        start_labels[i] = jac + jac ** 2
+                    start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
+                    start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
-            feature = {'example_ids': id,
-                       'ids': input_ids,
-                       'mask': attention_mask,
-                       'offsets': offsets,
-                       'start_labels': start_labels,
-                       'end_labels': end_labels,
-                       'classifier_labels':[classifier_labels],
-                       'orig_answer': answer,
-                       'sequence_ids': sequence_ids,}
-            features.append(feature)
+                    end_labels = np.zeros(n)
+                    for i in range(targets_start, token_answer_end_index + 1):
+                        jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
+                        end_labels[i] = jac + jac ** 2
+                    end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
+                    end_labels[targets_end] += config.SOFT_ALPHA[fold]
+
+                    start_labels = list(start_labels)
+                    end_labels = list(end_labels)
+
+                    classifier_labels = 1
+
+                feature = {'example_ids': id,
+                           'ids': input_ids,
+                           'mask': attention_mask,
+                           'offsets': offsets,
+                           'start_labels': start_labels,
+                           'end_labels': end_labels,
+                           'classifier_labels':[classifier_labels],
+                           'orig_answer': answer,
+                           'sequence_ids': sequence_ids,}
+                features.append(feature)
     return features
 
 
 class ChaiiDataset:
-    def __init__(self, fold, ids, contexts, questions, answers, answer_starts, mode='train', hns_features=None):
+    def __init__(self, fold, ids, contexts, questions, answers, answer_starts, languages, mode='train', hns_features=None):
         self.fold = fold
         self.tokenizer = config.TOKENIZER
         self.mode = mode
@@ -176,7 +234,7 @@ class ChaiiDataset:
             self.features = hns_features
             self.sampled_features = hard_negative_sampling(self.features)
         else:
-            self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, fold)
+            self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold)
             if mode=='train':
                 #self.sampled_features = uniform_negative_sampling(self.features, len(ids))
                 self.sampled_features = self.features
