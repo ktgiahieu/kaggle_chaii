@@ -81,6 +81,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
             for sent in sentences_raw:
                 if sent[0] == ')':
                     sentences[-1] = sentences[-1] + sent
+                elif sent == 'கிமீ (3,011 ச. மைல்) நீர்ப் பரப்பும் ஆகும்.':
+                    sentences.append('357,021 ச.கிமீ (137,847 ச.மைல்) பரப்பளவு கொண்ட இந்நாட்டில் 349,223 ச.கிமீ (134,836 ச.மைல்) நிலப் பரப்பும், 7,798 ச.கிமீ (3,011 ச.மைல்) நீர்ப் பரப்பும் ஆகும்.')
                 else:
                     sentences.append(sent)
             # Find answer_start in sentences
