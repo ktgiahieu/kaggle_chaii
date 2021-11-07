@@ -103,7 +103,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 elif sent == ' மீ. 2 பரப்பளவு கொண்டது.':
                     sentences[-1] = sentences[-1] + sent[1:]
                 elif sent == 'இதன் நீளம் 6400 கி. மீ. கள். உலகிலேயே பரப்பளவில் பெரிய ஆற்றுப் படுக்கையை கொண்ட ஆறாகும்.':
-                    sentence.append('இதன் நீளம் 6400 கி.மீ.கள். உலகிலேயே பரப்பளவில் பெரிய ஆற்றுப் படுக்கையை கொண்ட ஆறாகும்.')
+                    sentences.append('இதன் நீளம் 6400 கி.மீ.கள். உலகிலேயே பரப்பளவில் பெரிய ஆற்றுப் படுக்கையை கொண்ட ஆறாகும்.')
                 else:
                     sentences.append(sent)
             # Find answer_start in sentences
