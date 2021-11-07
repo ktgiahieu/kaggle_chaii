@@ -68,6 +68,10 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
         orig_question = orig_question.strip()
 
+        if id == '767506ee1':
+            orig_answer = 'பெங்களூரில்'
+            orig_answer_start += 2
+
         all_aug_contexts = [orig_context]
         all_aug_questions = [orig_question]
         all_aug_answers = [orig_answer]
