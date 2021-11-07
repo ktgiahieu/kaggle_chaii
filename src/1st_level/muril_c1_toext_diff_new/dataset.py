@@ -155,11 +155,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         if sentences[answer_sen][answer_sen_start+plus:answer_sen_start+plus+len(orig_answer)]==orig_answer:
                             answer_sen_start+=plus
                             break
-                            
-                print(sentences[answer_sen])
-                print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
-                print(orig_answer)
-                print(id)
+
 
                 assert(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]==orig_answer)
 
