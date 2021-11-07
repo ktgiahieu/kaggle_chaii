@@ -90,6 +90,10 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 break
               else:
                 total_len+= len_sen+1
+            print(sentences[answer_sen])
+            print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
+            print(orig_answer)
+
             assert(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]==orig_answer)
 
             # Shuffle neighbor sentences
