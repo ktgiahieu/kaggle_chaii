@@ -83,6 +83,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     sentences[-1] = sentences[-1] + sent
                 elif sent == ' P. B) என்ற முன்னெழுத்துகளால் பரவலாக அறியப்படுகிறார்.':
                     sentences[-1] = sentences[-1] + sent
+                elif sent == 'மீ². சென்னை மாவட்டமும், திருவள்ளூர், மற்றும் காஞ்சிபுரம் மாவட்டங்களின் சில பகுதிகளும் சென்னை மாநகரப் பகுதிகளாகக் கருதப்படுகின்றன.':
+                    sentences[-1] = sentences[-1] + sent
                 elif sent == 'அமர்நாத் ராமகிருஷ்ணன் கூறியுள்ளார்.':
                     sentences[-1] = sentences[-1] + ' ' + sent
                 elif sent == 'கிமீ (573 ச. மைல்) பரப்பளவு கொண்டது.':
