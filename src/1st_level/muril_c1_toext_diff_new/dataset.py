@@ -99,6 +99,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         sentences.append('[45] எஸ். தாணுவின் தயாரிப்பில் ஏ. ஆர். முருகதாஸ் இயக்கிய விஜயின் அடுத்த திரைப்படமான துப்பாக்கி 2012ம் ஆண்டு தீபாவளி அன்று வெளியிடப்பட்டது.')
                     elif sent == 'அமர்நாத் ராமகிருஷ்ணன் கூறியுள்ளார்.':
                         sentences[-1] = sentences[-1] + ' ' + sent
+                    elif sent == 'की डिग्री बी. एन. कॉलेज, पटना से प्राप्त की।':
+                        sentences.append('इसके बाद इन्होने बी.एस.सी. की डिग्री बी.एन. कॉलेज, पटना से प्राप्त की।')
                     elif sent == '2450 ஆண்டு களுக்கு முன்பு அதாவது கி. மு. ஐந்தாம் நூற்றாண்டில் வாழ்ந்தவர் சாக்ரடீஸ்.':
                         sentences.append('2450 ஆண்டு களுக்கு முன்பு அதாவது கி.மு. ஐந்தாம் நூற்றாண்டில் வாழ்ந்தவர் சாக்ரடீஸ்.')
                     elif sent == ' ஜெ. ஜெ. தாம்சன்(Joseph John Thomson) என்று பொதுவாக அறியப்படுகின்ற சர் ஜோசப் ஜான் தாம்சன்(டிசம்பர் 18, 1856 - ஆகஸ்ட் 30, 1940)அணுவின் அடிப்படைப் பொருளான மின்னணு எனப்படும் எலக்ட்ரானைக் கண்டுபிடித்த ஆங்கில இயற்பியலார் ஆவார்.':
@@ -144,15 +146,20 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     answer_sen+=2
                 elif id == '7443be1a7':
                     answer_sen_start = 6
-                elif id == 'c10b2e5d7':
-                    answer_sen-=1
-                    answer_sen_start=32
+                elif id == 'b861d93af':
+                    answer_sen-=3
+                    answer_sen_start = 42
 
                 if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
                     for plus in range(-20, 20):
                         if sentences[answer_sen][answer_sen_start+plus:answer_sen_start+plus+len(orig_answer)]==orig_answer:
                             answer_sen_start+=plus
                             break
+                            
+                print(sentences[answer_sen])
+                print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
+                print(orig_answer)
+                print(id)
 
                 assert(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]==orig_answer)
 
