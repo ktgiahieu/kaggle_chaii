@@ -89,7 +89,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 answer_sen_start = orig_answer_start - total_len
                 break
               else:
-                total_len+= len_sen+1
+                total_len+= len_sen+(1 if orig_context[total_len] == ' ' else 0)
             print(sentences[answer_sen])
             print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
             print(orig_answer)
