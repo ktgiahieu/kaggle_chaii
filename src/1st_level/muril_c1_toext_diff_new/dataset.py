@@ -77,7 +77,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
         if random.random() < 1.0:
             # Split context to sentences
             sentences_raw=sentence_tokenize.sentence_split(orig_context, lang='hi' if language=='hindi' else 'ta')
-            sentences
+            sentences = []
             for sent in sentences_raw:
                 if sent[0] == '(':
                     sentences[-1] = sentences[-1] + sent
