@@ -21,16 +21,6 @@ def run(fold, seed):
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
-    valid_dataset = dataset.ChaiiDataset(
-        fold=fold,
-        ids=df_valid.id.values,
-        contexts=df_valid.context.values,
-        questions=df_valid.question.values,
-        answers=df_valid.answer_text.values,
-        answer_starts=df_valid.answer_start.values,
-        languages=df_train.language.values,
-        mode='valid')
-
     train_dataset = dataset.ChaiiDataset(
         fold=fold,
         ids=df_train.id.values,
@@ -47,15 +37,15 @@ def run(fold, seed):
         num_workers=4,
         shuffle=True)
 
-    #valid_dataset = dataset.ChaiiDataset(
-    #    fold=fold,
-    #    ids=df_valid.id.values,
-    #    contexts=df_valid.context.values,
-    #    questions=df_valid.question.values,
-    #    answers=df_valid.answer_text.values,
-    #    answer_starts=df_valid.answer_start.values,
-    #    languages=df_train.language.values,
-    #    mode='valid')
+    valid_dataset = dataset.ChaiiDataset(
+        fold=fold,
+        ids=df_valid.id.values,
+        contexts=df_valid.context.values,
+        questions=df_valid.question.values,
+        answers=df_valid.answer_text.values,
+        answer_starts=df_valid.answer_start.values,
+        languages=df_train.language.values,
+        mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
