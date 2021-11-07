@@ -130,6 +130,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 total_len+= len_sen
                 if orig_context[total_len] == ' ':
                     total_len+=1
+            if id == 'b23b196f2':
+                answer_sen+=2
 
             if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
                 for plus in range(-20, 20):
