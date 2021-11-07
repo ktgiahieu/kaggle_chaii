@@ -144,6 +144,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 answer_sen+=2
             elif id == '7443be1a7':
                 answer_sen_start = 6
+            elif id == 'c10b2e5d7':
+                answer_sen-=1
 
             if sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)]!=orig_answer:
                 for plus in range(-20, 20):
