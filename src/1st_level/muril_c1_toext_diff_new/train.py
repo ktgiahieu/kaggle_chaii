@@ -21,6 +21,10 @@ def run(fold, seed):
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
+    if config.DEBUG:
+        df_train = df_train[:100]
+        df_valid = df_valid[:10]
+
     train_dataset = dataset.ChaiiDataset(
         fold=fold,
         ids=df_train.id.values,

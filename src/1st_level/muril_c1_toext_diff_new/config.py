@@ -33,6 +33,7 @@ else: #colab
 
     MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-muril-base-cased-squad2'
 
+DEBUG = True
 # Model params
 SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
