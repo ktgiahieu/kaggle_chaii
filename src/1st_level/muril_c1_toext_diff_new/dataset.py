@@ -76,8 +76,13 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
 
         if random.random() < 1.0:
             # Split context to sentences
-            sentences=sentence_tokenize.sentence_split(orig_context, lang='hi' if language=='hindi' else 'ta')
-
+            sentences_raw=sentence_tokenize.sentence_split(orig_context, lang='hi' if language=='hindi' else 'ta')
+            sentences
+            for sent in sentences_raw:
+                if sent[0] == '(':
+                    sentences[-1] = sentences[-1] + sent
+                else:
+                    sentences.append(sent)
             # Find answer_start in sentences
             total_len = 0
             answer_sen = 0
@@ -92,6 +97,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                 total_len+= len_sen
                 if orig_context[total_len] == ' ':
                     total_len+=1
+                elif orig_context[total_len] == ')':
             print(sentences[answer_sen])
             print(sentences[answer_sen][answer_sen_start:answer_sen_start+len(orig_answer)])
             print(orig_answer)
