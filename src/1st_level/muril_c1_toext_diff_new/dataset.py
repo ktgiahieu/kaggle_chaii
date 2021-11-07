@@ -87,6 +87,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     sentences[-1] = sentences[-1] + sent
                 elif sent == ' மு. கருணாநிதியால் திறந்து வைக்கப்பட்டது.':
                     sentences[-1] = sentences[-1] + ' மு.கருணாநிதியால் திறந்து வைக்கப்பட்டது.'
+                elif sent == 'மு 1400-1000 ஆண்டுகளில் புகையிலை அமெரிக்காவில் பயன்படுத்தப்பட்டுள்ளது, மேலும் மெக்சிகோ நாட்டில் சாகுபடி செய்யப்பட்டதாகவும் அறியப்படுகிறது.':
+                    sentences[-1] = sentences[-1] + sent
                 elif sent == ' P. B) என்ற முன்னெழுத்துகளால் பரவலாக அறியப்படுகிறார்.':
                     sentences[-1] = sentences[-1] + sent
                 elif sent == 'ஆர்) மற்றும் ஜெ. ஜெயலலிதா ஆகியோர் தமிழகத்தின் முதல்வர்களாக பதவி வகித்திருக்கிறார்கள்.':
