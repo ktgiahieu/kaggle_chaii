@@ -119,7 +119,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
             assert(new_context[new_answer_start:new_answer_start+len(orig_answer)]==orig_answer)
 
             all_aug_contexts.append(new_context)
-            all_aug_questions.append(question)
+            all_aug_questions.append(orig_question)
             all_aug_answers.append(orig_answer)
             all_aug_answer_starts.append(new_answer_start)
 
