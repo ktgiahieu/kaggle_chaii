@@ -83,6 +83,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     sentences[-1] = sentences[-1] + sent
                 elif sent == ' P. B) என்ற முன்னெழுத்துகளால் பரவலாக அறியப்படுகிறார்.':
                     sentences[-1] = sentences[-1] + sent
+                elif sent == 'அமர்நாத் ராமகிருஷ்ணன் கூறியுள்ளார்.':
+                    sentences[-1] = sentences[-1] + sent
                 elif sent == 'கிமீ (3,011 ச. மைல்) நீர்ப் பரப்பும் ஆகும்.':
                     sentences.append('357,021 ச.கிமீ (137,847 ச.மைல்) பரப்பளவு கொண்ட இந்நாட்டில் 349,223 ச.கிமீ (134,836 ச.மைல்) நிலப் பரப்பும், 7,798 ச.கிமீ (3,011 ச.மைல்) நீர்ப் பரப்பும் ஆகும்.')
                 elif sent == '[1] ஐரோப்பா கண்டமானது, 10,180,000 ச. கி;மீகள் பரப்பளவைக் கொண்டது.':
