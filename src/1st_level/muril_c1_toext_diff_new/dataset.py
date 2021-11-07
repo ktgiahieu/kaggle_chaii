@@ -85,6 +85,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
             for sent in sentences_raw:
                 if sent[0] == ')':
                     sentences[-1] = sentences[-1] + sent
+                elif sent == ' மு. கருணாநிதியால் திறந்து வைக்கப்பட்டது.':
+                    sentences[-1] = sentences[-1] + sent
                 elif sent == ' P. B) என்ற முன்னெழுத்துகளால் பரவலாக அறியப்படுகிறார்.':
                     sentences[-1] = sentences[-1] + sent
                 elif sent == 'ஆர்) மற்றும் ஜெ. ஜெயலலிதா ஆகியோர் தமிழகத்தின் முதல்வர்களாக பதவி வகித்திருக்கிறார்கள்.':
