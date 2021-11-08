@@ -74,7 +74,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
         orig_question = orig_question.strip()
 
         if not re.search('[a-zA-Z]', id):
-            continue
+            if int(id) < 6100:
+                continue
 
         if id == '767506ee1':
             orig_answer = 'பெங்களூரில்'
