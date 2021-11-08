@@ -261,13 +261,13 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     start_labels = np.zeros(n)
                     for i in range(token_answer_start_index, targets_end + 1):
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
-                        jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
+                        jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
                         start_labels[i] = jac
                     if 1.0 not in start_labels:
                         print(start_labels)
                         for i in range(token_answer_start_index, targets_end + 1):
-                            jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
-                            print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1] + 1]} : {jac}")
+                            jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
+                            print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                     start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
