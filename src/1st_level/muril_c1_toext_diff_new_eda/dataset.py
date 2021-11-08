@@ -6,6 +6,8 @@ from indicnlp.tokenize import sentence_tokenize
 import config
 import utils
 
+import re
+
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
 
@@ -70,6 +72,9 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
     count_wrong_token_end = 0
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
         orig_question = orig_question.strip()
+
+        if not re.match('[^a-zA-Z]', id):
+            continue
 
         if id == '767506ee1':
             orig_answer = 'பெங்களூரில்'
