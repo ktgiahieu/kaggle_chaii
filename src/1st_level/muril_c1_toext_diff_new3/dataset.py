@@ -275,7 +275,6 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     for i in range(targets_start, token_answer_end_index + 1):
                         #jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                         jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
-                        print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
                         end_labels[i] = jac
                     if 1.0 not in end_labels:
                         for i in range(targets_start, token_answer_end_index + 1):
