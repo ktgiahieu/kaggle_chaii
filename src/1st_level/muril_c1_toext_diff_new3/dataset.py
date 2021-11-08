@@ -79,7 +79,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
         all_aug_answer_starts = [orig_answer_start]
 
         if augment:
-            if random.random() < 1.0:
+            if random.random() < config.SHUFFLE_AUGMENT_RATE:
                 # Split context to sentences
                 sentences_raw=sentence_tokenize.sentence_split(orig_context, lang='hi' if language=='hindi' else 'ta')
                 sentences = []
@@ -262,12 +262,15 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     for i in range(token_answer_start_index, targets_end + 1):
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                         jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
-                        start_labels[i] = jac
+                        start_labels[i] = jac + jac**2
                     if 1.0 not in start_labels:
-                        print(start_labels)
+                        #print(start_labels)
+                        start_labels = np.zeros(n)
                         for i in range(token_answer_start_index, targets_end + 1):
-                            jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
-                            print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
+                            jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
+                            start_labels[i] = jac + jac**2
+                            #jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
+                            #print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                     start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
@@ -275,17 +278,18 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     for i in range(targets_start, token_answer_end_index + 1):
                         #jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                         jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
-                        end_labels[i] = jac
+                        end_labels[i] = jac + jac**2
                     if 1.0 not in end_labels:
+                        end_labels = np.zeros(n)
                         for i in range(targets_start, token_answer_end_index + 1):
-                            jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
-                            print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
+                            jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
+                            end_labels[i] = jac + jac**2
+                            #jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
+                            #print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
                     end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
                     end_labels[targets_end] += config.SOFT_ALPHA[fold]
                     start_labels = list(start_labels)
                     end_labels = list(end_labels)
-
-                    
 
                     classifier_labels = 1
 
