@@ -279,8 +279,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                             jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                             start_labels[i] = jac + jac**2
                             
-                            #jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
-                            #print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
+                            jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
+                            print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                     start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
@@ -295,8 +295,8 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         for i in range(targets_start, token_answer_end_index + 1):
                             jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                             end_labels[i] = jac + jac**2
-                            #jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
-                            #print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
+                            jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
+                            print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
                     end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
                     end_labels[targets_end] += config.SOFT_ALPHA[fold]
                     start_labels = list(start_labels)
