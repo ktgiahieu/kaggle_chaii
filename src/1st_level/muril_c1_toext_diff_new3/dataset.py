@@ -263,7 +263,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                         jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
                         print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1] + 1]} : {jac}")
-                        start_labels[i] = jac
+                        start_labels[i] = jac + jac**2
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                     start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
