@@ -66,8 +66,6 @@ def jaccard_array(a, b):
 
 def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, augment=False):
     features = []
-    count_wrong_token_start = 0
-    count_wrong_token_end = 0
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
         orig_question = orig_question.strip()
 
@@ -265,14 +263,12 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                         jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
                         start_labels[i] = jac + jac**2
-                    if 2.0 not in start_labels: #1+1^2
-                        count_wrong_token_start +=1
+                    if 2.0 not in start_labels:
                         #print(start_labels)
                         start_labels = np.zeros(n)
                         for i in range(token_answer_start_index, targets_end + 1):
                             jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                             start_labels[i] = jac + jac**2
-                            
                             #jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
                             #print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1]]} : {jac}")
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
@@ -283,8 +279,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                         jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
                         end_labels[i] = jac + jac**2
-                    if 2.0 not in end_labels: #1+1^2
-                        count_wrong_token_end +=1
+                    if 2.0 not in end_labels:
                         end_labels = np.zeros(n)
                         for i in range(targets_start, token_answer_end_index + 1):
                             jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
@@ -308,7 +303,6 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                            'orig_answer': answer,
                            'sequence_ids': sequence_ids,}
                 features.append(feature)
-    print(count_wrong_token_start, count_wrong_token_end)
     return features
 
 
