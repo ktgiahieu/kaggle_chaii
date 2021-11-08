@@ -265,7 +265,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                         jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1]])
                         start_labels[i] = jac + jac**2
-                    if 1.0 not in start_labels:
+                    if 2.0 not in start_labels:
                         count_wrong_token_start +=1
                         #print(start_labels)
                         start_labels = np.zeros(n)
@@ -283,7 +283,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                         jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
                         end_labels[i] = jac + jac**2
-                    if 1.0 not in end_labels:
+                    if 2.0 not in end_labels:
                         count_wrong_token_end +=1
                         end_labels = np.zeros(n)
                         for i in range(targets_start, token_answer_end_index + 1):
