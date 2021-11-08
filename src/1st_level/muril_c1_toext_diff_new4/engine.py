@@ -8,6 +8,10 @@ import gc
 import config
 import utils
 
+
+from apex import amp
+
+
 from string import punctuation
 
 def loss_fn(start_logits, end_logits,
@@ -57,7 +61,10 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             tk0.set_postfix(loss=losses.avg)
 
             loss = loss / config.ACCUMULATION_STEPS   
-            loss.backward()
+
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                scaled_loss.backward()
+            #loss.backward()
 
             if (bi+1) % config.ACCUMULATION_STEPS    == 0:             # Wait for several backward steps
                 optimizer.step()                            # Now we can do an optimizer step
