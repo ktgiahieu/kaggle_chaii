@@ -262,7 +262,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     for i in range(token_answer_start_index, targets_end + 1):
                         #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
                         jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
-                        start_labels[i] = jac + jac**2
+                        start_labels[i] = jac
                     if 1.0 not in start_labels:
                         for i in range(token_answer_start_index, targets_end + 1):
                             jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
@@ -275,7 +275,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         #jac = jaccard_array(answer_array, sentence_array[targets_start:i + 1])
                         jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
                         print(f"{answer} | {context[offsets[targets_start][0]:offsets[i][1]]} : {jac}")
-                        end_labels[i] = jac + jac ** 2
+                        end_labels[i] = jac
                     if 1.0 not in end_labels:
                         for i in range(targets_start, token_answer_end_index + 1):
                             jac = utils.jaccard(answer, context[offsets[targets_start][0]:offsets[i][1]])
