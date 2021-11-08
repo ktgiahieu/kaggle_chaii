@@ -73,7 +73,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
         orig_question = orig_question.strip()
 
-        if not re.match('[^a-zA-Z]', id):
+        if not re.search('[a-zA-Z]', id):
             continue
 
         if id == '767506ee1':
