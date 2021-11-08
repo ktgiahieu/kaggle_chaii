@@ -4,6 +4,7 @@ import random
 from indicnlp.tokenize import sentence_tokenize
 
 import config
+import utils
 
 import os
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
@@ -259,8 +260,10 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
 
                     start_labels = np.zeros(n)
                     for i in range(token_answer_start_index, targets_end + 1):
-                        jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
-                        start_labels[i] = jac + jac ** 2
+                        #jac = jaccard_array(answer_array, sentence_array[i:targets_end + 1])
+                        jac = utils.jaccard(answer, context[offsets[i][0]:offsets[targets_end][1] + 1])
+                        print(f"{answer} | {context[offsets[i][0]:offsets[targets_end][1] + 1]} : {jac}")
+                        start_labels[i] = jac
                     start_labels = (1 - config.SOFT_ALPHA[fold]) * start_labels / start_labels.sum()
                     start_labels[targets_start] += config.SOFT_ALPHA[fold]
 
@@ -270,7 +273,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                         end_labels[i] = jac + jac ** 2
                     end_labels = (1 - config.SOFT_ALPHA[fold]) * end_labels / end_labels.sum()
                     end_labels[targets_end] += config.SOFT_ALPHA[fold]
-
+                    print(start_labels)
                     start_labels = list(start_labels)
                     end_labels = list(end_labels)
 
