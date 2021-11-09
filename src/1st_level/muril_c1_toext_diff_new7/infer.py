@@ -34,6 +34,7 @@ def run():
         questions=df_test.question.values,
         answers=df_test.answer_text.values,
         answer_starts=df_test.answer_start.values,
+        languages=df_test.language.values,
         mode='infer')
 
     data_loader = torch.utils.data.DataLoader(
