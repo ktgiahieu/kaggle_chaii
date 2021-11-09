@@ -39,25 +39,26 @@ def run():
     data_loader = torch.utils.data.DataLoader(
         test_dataset,
         shuffle=False,
-        batch_size=config.VALID_BATCH_SIZE,
+        batch_size=config.INFER_BATCH_SIZE,
         num_workers=1)
     
     predicted_labels_start = []
     predicted_labels_end = []
 
         
-    for i in range(config.N_FOLDS):  
+    for i in range(config.N_FOLDS): 
+        print(f'Infer fold {i+1}')
         seed = config.SEEDS[i]
         model = models.ChaiiModel(conf=model_config, fold=i)
         model.to(device)
         model.eval()
         if config.is_kaggle:
             if i<=2:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i}_{seed}.bin'
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i+1}_{seed}.bin'
             else:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i}_{seed}.bin'
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i+1}_{seed}.bin'
         else:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
         model.load_state_dict(torch.load(model_path, map_location="cuda"))
 
         predicted_labels_per_fold_start = []
