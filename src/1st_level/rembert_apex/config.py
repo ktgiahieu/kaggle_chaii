@@ -34,6 +34,7 @@ else: #colab
     MODEL_CONFIG = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/pretrained/google-rembert-squad2-1ep-5e6'
 
 DEBUG = False
+USE_APEX = False
 # Model params
 SEEDS = [15, 28, 45, 1003, 2024]
 N_FOLDS = 5

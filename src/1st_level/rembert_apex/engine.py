@@ -59,10 +59,11 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             tk0.set_postfix(loss=losses.avg)
 
             loss = loss / config.ACCUMULATION_STEPS  
-            
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            #loss.backward()
+            if config.USE_APEX:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss.backward()
 
             if (bi+1) % config.ACCUMULATION_STEPS    == 0:             # Wait for several backward steps
                 optimizer.step()                            # Now we can do an optimizer step
