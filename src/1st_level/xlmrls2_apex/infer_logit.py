@@ -54,10 +54,7 @@ def run():
         model.to(device)
         model.eval()
         if config.is_kaggle:
-            if i<=2:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i+1}_{seed}.bin'
-            else:
-                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i+1}_{seed}.bin'
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
         else:
             model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
         model.load_state_dict(torch.load(model_path, map_location="cuda"))
