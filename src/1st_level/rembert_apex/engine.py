@@ -1,6 +1,10 @@
 from shutil import copyfile
 
-from apex import amp
+try:
+    from apex import amp
+    APEX_AVAILABLE = True
+except ModuleNotFoundError:
+    APEX_AVAILABLE = False
 
 import numpy as np
 import torch
@@ -59,7 +63,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             tk0.set_postfix(loss=losses.avg)
 
             loss = loss / config.ACCUMULATION_STEPS  
-            if config.USE_APEX:
+            if config.USE_APEX and APEX_AVAILABLE:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
