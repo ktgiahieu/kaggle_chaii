@@ -34,6 +34,7 @@ else: #colab
     MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
 
 DEBUG = False
+USE_APEX = False
 # Model params
 SEEDS = [12, 25, 42, 1000, 2021]
 N_FOLDS = 5

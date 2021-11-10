@@ -93,11 +93,11 @@ def run(fold, seed):
     #    num_training_steps=num_train_steps)
     scheduler = transformers.get_constant_schedule(
         optimizer=optimizer)
-
-    model, optimizer = amp.initialize(
-        model, optimizer, opt_level="O2", 
-        keep_batchnorm_fp32=True, loss_scale="dynamic"
-    )
+    if USE_APEX:
+        model, optimizer = amp.initialize(
+            model, optimizer, opt_level="O2", 
+            keep_batchnorm_fp32=True, loss_scale="dynamic"
+        )
 
     if not os.path.isdir(f'{config.MODEL_SAVE_PATH}'):
         os.makedirs(f'{config.MODEL_SAVE_PATH}')
