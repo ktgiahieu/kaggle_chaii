@@ -93,7 +93,7 @@ def run(fold, seed):
     #    num_training_steps=num_train_steps)
     scheduler = transformers.get_constant_schedule(
         optimizer=optimizer)
-    if USE_APEX:
+    if config.USE_APEX:
         model, optimizer = amp.initialize(
             model, optimizer, opt_level="O2", 
             keep_batchnorm_fp32=True, loss_scale="dynamic"

@@ -59,7 +59,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             tk0.set_postfix(loss=losses.avg)
 
             loss = loss / config.ACCUMULATION_STEPS  
-            if USE_APEX:
+            if config.USE_APEX:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
