@@ -34,7 +34,7 @@ else: #colab
     MODEL_CONFIG = '/content/roberta-large-wechsel-hindi'
 
 DEBUG = False
-USE_APEX = False
+USE_APEX = True
 # Model params
 SEEDS = [12, 25, 42, 1000, 2021]
 N_FOLDS = 5
