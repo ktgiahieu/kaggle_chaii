@@ -25,22 +25,6 @@ def run(fold, seed):
         df_train = df_train[:100]
         df_valid = df_valid[:10]
 
-    train_dataset = dataset.ChaiiDataset(
-        fold=fold,
-        ids=df_train.id.values,
-        contexts=df_train.context.values,
-        questions=df_train.question.values,
-        answers=df_train.answer_text.values,
-        answer_starts=df_train.answer_start.values,
-        languages=df_train.language.values,
-        mode='train')
-
-    train_data_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=config.TRAIN_BATCH_SIZE,
-        num_workers=4,
-        shuffle=True)
-
     valid_dataset = dataset.ChaiiDataset(
         fold=fold,
         ids=df_valid.id.values,
@@ -101,7 +85,7 @@ def run(fold, seed):
 
     print(f'Training is starting for fold={fold+1}')
 
-    score = engine.train_fn(train_data_loader, valid_data_loader, model, optimizer,
+    score = engine.train_fn(df_train, valid_data_loader, model, optimizer,
                     device, writer, f'{config.MODEL_SAVE_PATH}/model_{fold+1}_{seed}.bin', scheduler=scheduler, df_valid=df_valid, valid_dataset=valid_dataset)
 
     if config.USE_SWA:
