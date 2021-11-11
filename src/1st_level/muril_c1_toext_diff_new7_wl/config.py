@@ -37,7 +37,7 @@ DEBUG = False
 # Model params
 SEEDS = [13, 26, 43, 1101, 2022]
 N_FOLDS = 5
-EPOCHS = 1
+EPOCHS = 2
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 SHUFFLE_AUGMENT_RATE = 1.0
@@ -70,7 +70,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 200*ACCUMULATION_STEPS),
+                (10., 50*ACCUMULATION_STEPS),
                 ]
 
 

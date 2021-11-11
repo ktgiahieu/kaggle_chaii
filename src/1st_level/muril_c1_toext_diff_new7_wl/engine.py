@@ -16,7 +16,7 @@ def loss_fn(start_logits, end_logits,
     loss_fct = torch.nn.KLDivLoss()
     start_loss = loss_fct(m(start_logits), start_positions)
     end_loss = loss_fct(m(end_logits), end_positions)
-    total_loss = (0.65*start_loss + 1.35*end_loss)
+    total_loss = (start_loss + end_loss)
     return total_loss
 
 def classifier_loss_fn(logits, labels):
@@ -167,4 +167,4 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
     print(f'hi: {eval_score_hi} | ta: {eval_score_ta}')
-    return eval_score
+    return eval_score_hi
