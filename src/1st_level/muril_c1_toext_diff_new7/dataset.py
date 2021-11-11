@@ -194,6 +194,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     all_aug_answer_starts.append(new_answer_start)
 
         for aug_idx, (context, question, answer, answer_start) in enumerate(zip(all_aug_contexts, all_aug_questions, all_aug_answers, all_aug_answer_starts)):
+            random_doc_stride = config.DOC_STRIDE + random.randrange(-80, 128, 16)
             tokenized_example = tokenizer(
                 question,
                 context,
