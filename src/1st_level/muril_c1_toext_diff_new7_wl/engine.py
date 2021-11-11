@@ -64,7 +64,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 scheduler.step()
                 model.zero_grad()                           # Reset gradients tensors
                 if config.SAVE_CHECKPOINT_TYPE == 'best_iter':
-                    if step >= last_eval_step + eval_period or epoch*len(train_data_loader) + bi +1 == config.EPOCHS*len(train_data_loader):
+                    if step >= last_eval_step + eval_period:
                         val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer, df_valid, valid_dataset)                           
                         last_eval_step = step
                         for score, period in config.EVAL_SCHEDULE:
@@ -88,7 +88,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             gc.collect()
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
-        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
+        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch' or config.SAVE_CHECKPOINT_TYPE == 'best_iter':
             val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
