@@ -35,7 +35,7 @@ def train_fn(df_train, valid_data_loader, model, optimizer, device, writer, mode
     eval_period = config.EVAL_SCHEDULE[0][1]   
     for epoch in range(config.EPOCHS):
         train_dataset = dataset.ChaiiDataset(
-            fold=fold,
+            fold=int(model_path_filename.split('_')[1]) -1,
             ids=df_train.id.values,
             contexts=df_train.context.values,
             questions=df_train.question.values,
