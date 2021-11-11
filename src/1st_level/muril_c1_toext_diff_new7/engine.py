@@ -184,4 +184,4 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
     writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
     print(f'hi: {eval_score_hi} | ta: {eval_score_ta}')
-    return eval_score
+    return eval_score_hi
