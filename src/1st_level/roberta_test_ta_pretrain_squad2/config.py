@@ -38,7 +38,7 @@ USE_APEX = True
 # Model params
 SEEDS = [12, 25, 42, 1000, 2021]
 N_FOLDS = 5
-EPOCHS = 3
+EPOCHS = 1
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
 SHUFFLE_AUGMENT_RATE = 1.0
@@ -68,9 +68,9 @@ USE_SWA = False
 SWA_RATIO = 0.9
 SWA_FREQ = 30
 
-SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
+SAVE_CHECKPOINT_TYPE = 'last_epoch' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 400*ACCUMULATION_STEPS),
+                (10., 200*ACCUMULATION_STEPS),
                 ]
 
 
