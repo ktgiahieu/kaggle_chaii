@@ -24,7 +24,9 @@ def run(fold, seed):
     dfx = pd.read_csv(config.TRAINING_FILE)
     
     df_train = dfx[dfx.kfold != fold].reset_index(drop=True)
+    df_train = df_train[df_train.language=='hindi'].reset_index(drop=True)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
+    df_valid = df_valid[df_valid.language=='hindi'].reset_index(drop=True)
 
     if config.DEBUG:
         df_train = df_train[:100]
