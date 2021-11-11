@@ -158,11 +158,13 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
 
     df_valid['PredictionString'] = df_valid['id'].map(predictions).apply(utils.postprocess)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
-
+    eval_score_hi = df_valid[df_valid.language=='hindi'].apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
+    eval_score_ta = df_valid[df_valid.language=='tamil'].apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
 
     writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
+    print(f'hi: {eval_score_hi} | ta: {eval_score_ta}')
     return eval_score
