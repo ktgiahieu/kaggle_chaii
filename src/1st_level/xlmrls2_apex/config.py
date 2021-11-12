@@ -34,7 +34,7 @@ else: #colab
     MODEL_CONFIG = 'deepset/xlm-roberta-large-squad2'
 
 DEBUG = False
-USE_APEX = True
+USE_APEX = False
 # Model params
 SEEDS = [12, 25, 42, 1000, 2021]
 N_FOLDS = 5
@@ -47,7 +47,7 @@ PATIENCE = None
 EARLY_STOPPING_DELTA = None
 N_REINIT_LAST_LAYERS = 0
 TRAIN_BATCH_SIZE = 2
-VALID_BATCH_SIZE = 2
+VALID_BATCH_SIZE = 32
 ACCUMULATION_STEPS = 4
 MAX_LEN = 384
 DOC_STRIDE = 128
@@ -70,7 +70,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 2000*ACCUMULATION_STEPS),
+                (10., 500*ACCUMULATION_STEPS),
                 ]
 
 
