@@ -66,7 +66,7 @@ def jaccard_array(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, augment=False):
+def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, augment=False, use_random_docstride=False):
     features = []
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
         orig_question = orig_question.strip()
@@ -194,7 +194,10 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     all_aug_answer_starts.append(new_answer_start)
 
         for aug_idx, (context, question, answer, answer_start) in enumerate(zip(all_aug_contexts, all_aug_questions, all_aug_answers, all_aug_answer_starts)):
-            random_doc_stride = config.DOC_STRIDE + random.randrange(-80, 128, 16)
+            if use_random_docstride:
+                random_doc_stride = config.DOC_STRIDE + random.randrange(-80, 128, 16)
+            else:
+                random_doc_stride = config.DOC_STRIDE
             tokenized_example = tokenizer(
                 question,
                 context,
@@ -325,11 +328,11 @@ class ChaiiDataset:
             self.sampled_features = hard_negative_sampling(self.features)
         else:
             if mode=='train':
-                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=True)
+                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=True, use_random_docstride=True)
                 #self.sampled_features = uniform_negative_sampling(self.features, len(ids))
                 self.sampled_features = self.features
             else:
-                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=False)
+                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=False, use_random_docstride=False)
         
     def __len__(self):
         return len(self.sampled_features) if self.mode == 'train' else len(self.features)
