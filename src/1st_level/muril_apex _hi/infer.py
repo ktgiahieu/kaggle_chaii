@@ -21,6 +21,7 @@ def run():
     df_test.loc[:, 'answer_text'] = ''
     df_test['context'] = df_test['context'].apply(lambda x: ' '.join(x.split()))
     df_test['question'] = df_test['question'].apply(lambda x: ' '.join(x.split()))
+    df_test = df_test[df_test['language']=='hindi'].reset_index(drop=True)
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(

@@ -20,6 +20,7 @@ def run(fold):
 
     dfx = pd.read_csv(config.TRAINING_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
+    df_valid = df_valid[df_valid['language']=='hindi'].reset_index(drop=True)
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
@@ -42,6 +43,7 @@ def run(fold):
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
         answer_starts=df_valid.answer_start.values,
+        languages=df_valid.language.values,
         mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(

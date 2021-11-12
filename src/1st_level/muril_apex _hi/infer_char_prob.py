@@ -34,28 +34,30 @@ def run():
         questions=df_test.question.values,
         answers=df_test.answer_text.values,
         answer_starts=df_test.answer_start.values,
-        languages=df_test.language.values,
         mode='infer')
 
     data_loader = torch.utils.data.DataLoader(
         test_dataset,
         shuffle=False,
-        batch_size=config.INFER_BATCH_SIZE,
+        batch_size=config.VALID_BATCH_SIZE,
         num_workers=1)
     
     predicted_labels_start = []
     predicted_labels_end = []
 
-    for i in range(config.N_FOLDS): 
-        print(f'Infer fold {i+1}')
+        
+    for i in range(config.N_FOLDS):  
         seed = config.SEEDS[i]
         model = models.ChaiiModel(conf=model_config, fold=i)
         model.to(device)
         model.eval()
         if config.is_kaggle:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
+            if i<=2:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i}_{seed}.bin'
+            else:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i}_{seed}.bin'
         else:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
         model.load_state_dict(torch.load(model_path, map_location="cuda"))
 
         predicted_labels_per_fold_start = []
@@ -102,24 +104,16 @@ def run():
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
 
-    #Post process 
-    # Baseline
-    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
-    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
-    #predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
-    #                                               (predicted_labels_start, predicted_labels_end))
     # Heatmap 
-    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
+    char_prob = utils.postprocess_char_prob(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
-
-
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
         
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predictions, handle)
+        pickle.dump(char_prob, handle)
 
     del test_dataset
     del data_loader

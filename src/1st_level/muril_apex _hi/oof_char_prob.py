@@ -13,7 +13,7 @@ import config
 import models
 import dataset
 import engine
-predicted_labels = {}
+char_probs = {}
 
 def run(fold):
     seed = config.SEEDS[fold]
@@ -29,9 +29,12 @@ def run(fold):
     model = models.ChaiiModel(conf=model_config, fold=fold)
     model.to(device)
     if config.is_kaggle:
-        model_path = f'{config.TRAINED_MODEL_PATH}/model_{fold+1}_{seed}.bin'
+        if fold<=2:
+            model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+        else:
+            model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
     else:
-        model_path = f'{config.TRAINED_MODEL_PATH}/model_{fold+1}_{seed}.bin'
+        model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
     model.load_state_dict(torch.load(model_path), strict=False)
     model.eval()
 
@@ -46,7 +49,7 @@ def run(fold):
 
     valid_data_loader = torch.utils.data.DataLoader(
         valid_dataset,
-        batch_size=config.INFER_BATCH_SIZE,
+        batch_size=config.VALID_BATCH_SIZE,
         num_workers=4,
         shuffle=False)
 
@@ -94,37 +97,23 @@ def run(fold):
     #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
     
     # Heatmap
-    predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
+    char_prob = utils.postprocess_char_prob(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
-    
-    predicted_labels.update(predictions)
 
-    df_valid['PredictionString'] = df_valid['id'].map(predictions)
-    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
-
-    print(f'Loss = {losses.avg}')
-    print(f'Jaccard = {eval_score}')
-    return eval_score
+    char_probs.update(char_prob)
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
-    fold_scores = []
     for i in range(config.N_FOLDS):
         utils.seed_everything(seed=config.SEEDS[i])
-        fold_score = run(i)
-        fold_scores.append(fold_score)
+        run(i)
         torch.cuda.empty_cache()
         gc.collect()
-
-    for i in range(config.N_FOLDS):
-        print(f'Fold={i}, Jaccard score = {fold_scores[i]}')
-    print(f'Mean = {np.mean(fold_scores)}')
-    print(f'Std = {np.std(fold_scores)}')
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predicted_labels, handle)
+        pickle.dump(char_probs, handle)

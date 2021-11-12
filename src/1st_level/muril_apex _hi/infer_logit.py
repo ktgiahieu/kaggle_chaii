@@ -21,6 +21,7 @@ def run():
     df_test.loc[:, 'answer_text'] = ''
     df_test['context'] = df_test['context'].apply(lambda x: ' '.join(x.split()))
     df_test['question'] = df_test['question'].apply(lambda x: ' '.join(x.split()))
+    df_test = df_test[df_test['language']=='hindi'].reset_index(drop=True)
 
     device = torch.device('cuda')
     model_config = transformers.AutoConfig.from_pretrained(
@@ -46,6 +47,7 @@ def run():
     predicted_labels_start = []
     predicted_labels_end = []
 
+        
     for i in range(config.N_FOLDS): 
         print(f'Infer fold {i+1}')
         seed = config.SEEDS[i]
@@ -102,24 +104,16 @@ def run():
         tuple(x for x in predicted_labels_end), dim=0)
     predicted_labels_end = torch.mean(predicted_labels_end, dim=0)
 
-    #Post process 
-    # Baseline
-    #predicted_labels_start = torch.softmax(predicted_labels_start, dim=-1).numpy()
-    #predicted_labels_end = torch.softmax(predicted_labels_end, dim=-1).numpy()
-    #predictions = utils.postprocess_qa_predictions(df_test, test_dataset.features, 
-    #                                               (predicted_labels_start, predicted_labels_end))
     # Heatmap 
-    predictions = utils.postprocess_heatmap(df_test, test_dataset.features, 
+    heatmap_logit = utils.postprocess_heatmap_logit(df_test, test_dataset.features, 
                                                    (predicted_labels_start, predicted_labels_end))
-
-
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
         
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(predictions, handle)
+        pickle.dump(heatmap_logit, handle)
 
     del test_dataset
     del data_loader
