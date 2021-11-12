@@ -1,11 +1,15 @@
 from shutil import copyfile
 
-from apex import amp
-
 import numpy as np
 import torch
 import tqdm
 import gc
+
+try:
+    from apex import amp
+    APEX_AVAILABLE = True
+except ModuleNotFoundError:
+    APEX_AVAILABLE = False
 
 import config
 import utils
@@ -58,8 +62,8 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            loss = loss / config.ACCUMULATION_STEPS  
-            if config.USE_APEX:
+            loss = loss / config.ACCUMULATION_STEPS   
+            if config.USE_APEX and APEX_AVAILABLE:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
@@ -70,7 +74,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
                 scheduler.step()
                 model.zero_grad()                           # Reset gradients tensors
                 if config.SAVE_CHECKPOINT_TYPE == 'best_iter':
-                    if step >= last_eval_step + eval_period or epoch*len(train_data_loader) + bi +1 == config.EPOCHS*len(train_data_loader):
+                    if step >= last_eval_step + eval_period:
                         val_score = eval_fn(valid_data_loader, model, device, epoch*len(train_data_loader) + bi, writer, df_valid, valid_dataset)                           
                         last_eval_step = step
                         for score, period in config.EVAL_SCHEDULE:
@@ -94,7 +98,7 @@ def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, wri
             gc.collect()
 
         writer.add_scalar('Loss/train',losses.avg, (epoch+1)*len(train_data_loader))
-        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch':
+        if config.SAVE_CHECKPOINT_TYPE == 'best_epoch' or config.SAVE_CHECKPOINT_TYPE == 'best_iter':
             val_score = eval_fn(valid_data_loader, model, device, (epoch+1)*len(train_data_loader), writer, df_valid, valid_dataset)
             if not best_val_score or val_score > best_val_score:                    
                 best_val_score = val_score
@@ -164,11 +168,13 @@ def eval_fn(data_loader, model, device, iteration, writer, df_valid=None, valid_
 
     df_valid['PredictionString'] = df_valid['id'].map(predictions).apply(utils.postprocess)
     eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
-
+    eval_score_hi = df_valid[df_valid.language=='hindi'].apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
+    eval_score_ta = df_valid[df_valid.language=='tamil'].apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
     
     writer.add_scalar('Loss/val', losses.avg, iteration)
     print(f'Val loss iter {iteration}= {losses.avg}')
 
     writer.add_scalar('Score/val', eval_score, iteration)
     print(f'Val Jaccard score iter {iteration}= {eval_score}')
-    return eval_score
+    print(f'hi: {eval_score_hi} | ta: {eval_score_ta}')
+    return eval_score_hi
