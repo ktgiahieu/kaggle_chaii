@@ -9,7 +9,7 @@ is_kaggle = 'KAGGLE_URL_BASE' in os.environ
 # Paths
 comp_name = 'chaii-hindi-and-tamil-question-answering'
 my_impl = 'chaii-impl'
-my_model_dataset = 'chaii-muril-apex-hi'
+my_model_dataset = 'chaii-muril-apex-ta'
 if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
@@ -22,7 +22,7 @@ if is_kaggle:
 else: #colab
     repo_name = 'kaggle_chaii'
     drive_name = 'Chaii'
-    model_save = 'muril_apex_hi'
+    model_save = 'muril_apex_ta'
     
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
