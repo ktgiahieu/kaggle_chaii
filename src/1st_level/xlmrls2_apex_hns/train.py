@@ -131,7 +131,7 @@ def run(fold, seed):
 if __name__ == '__main__':
     fold_scores = []
     for i in range(config.N_FOLDS):
-        if i+1 not in [1,2,3,4,5]:
+        if i+1 not in [2,3,4,5]:
             continue
         seed = config.SEEDS[i]
         utils.seed_everything(seed=seed)
