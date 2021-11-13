@@ -27,7 +27,7 @@ else: #colab
     TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
-    TEACHER_PICKLE_FILE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/teacher_logit/muril_teacher_test.pkl'
+    TEACHER_PICKLE_FILE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/teacher_logit/muril_c1_toext_diff.pkl'
     MODEL_SAVE_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     TRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/{model_save}'
     INFERED_PICKLE_PATH = f'/content/{repo_name}/pickle'
@@ -41,7 +41,7 @@ N_FOLDS = 5
 EPOCHS = 2
 #NEGATIVE_POSITIVE_RATIO = 3.0
 
-SHUFFLE_AUGMENT_RATE = 1.0
+SHUFFLE_AUGMENT_RATE = 0.0
 
 PATIENCE = None
 EARLY_STOPPING_DELTA = None

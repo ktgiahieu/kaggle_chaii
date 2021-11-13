@@ -68,7 +68,7 @@ def jaccard_array(a, b):
 
 def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, augment=False):
     with open(config.TEACHER_PICKLE_FILE, 'rb') as handle:
-        hns_features = pickle.load(handle)
+        teacher_logits = pickle.load(handle)
     
     features = []
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
@@ -226,7 +226,11 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                            'end_labels': [0],
                            'classifier_labels':[0],
                            'offsets': offsets,
-                           'sequence_ids': sequence_ids}
+                           'sequence_ids': sequence_ids,
+                           'teacher_start_labels':[0],
+                           'teacher_start_mask':[0],
+                           'teacher_end_labels':[0],
+                           'teacher_end_mask':[0],}
                     features.append(feature)
                     continue
 
@@ -243,6 +247,17 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     token_end_index -= 1
                 token_answer_end_index = token_end_index
 
+                teacher_logit_start, teacher_logit_end = teacher_logits[id]
+                teacher_start_labels = [0]*(len(input_ids))
+                teacher_start_mask = [0]*(len(input_ids))
+                teacher_end_labels = [0]*(len(input_ids))
+                teacher_end_mask = [0]*(len(input_ids))
+                for i in range(token_answer_start_index, token_answer_end_index + 1):
+                    teacher_start_labels[i] = teacher_logit_start[offsets[i][0]]
+                    teacher_start_mask[i] = 1
+
+                    teacher_end_labels[i] = teacher_logit_end[offsets[i][1]-1]
+                    teacher_end_mask[i] = 1
                 if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
                     if aug_idx > 0:
                         continue
@@ -311,7 +326,12 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                            'end_labels': end_labels,
                            'classifier_labels':[classifier_labels],
                            'orig_answer': answer,
-                           'sequence_ids': sequence_ids,}
+                           'sequence_ids': sequence_ids,
+                           'teacher_start_labels':teacher_start_labels,
+                           'teacher_start_mask':teacher_start_mask,
+                           'teacher_end_labels':teacher_end_labels,
+                           'teacher_end_mask':teacher_end_mask,
+                           }
                 features.append(feature)
     return features
 
@@ -347,10 +367,18 @@ class ChaiiDataset:
             return {'ids': torch.tensor(data['ids'], dtype=torch.long),
                     'mask': torch.tensor(data['mask'], dtype=torch.long),
                     'start_labels': torch.tensor(data['start_labels'],
-                                                 dtype=torch.float),
+                                               dtype=torch.float),
                     'end_labels': torch.tensor(data['end_labels'],
                                                dtype=torch.float),
                     'classifier_labels':torch.tensor(data['classifier_labels'],
+                                               dtype=torch.float),
+                    'teacher_start_labels':torch.tensor(data['teacher_start_labels'],
+                                               dtype=torch.float),
+                    'teacher_start_mask':torch.tensor(data['teacher_start_mask'],
+                                               dtype=torch.float),
+                    'teacher_end_labels':torch.tensor(data['teacher_end_labels'],
+                                               dtype=torch.float),
+                    'teacher_end_mask':torch.tensor(data['teacher_end_mask'],
                                                dtype=torch.float),}
         else: #valid
             data = self.features[item]

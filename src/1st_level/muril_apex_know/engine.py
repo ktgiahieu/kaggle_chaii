@@ -11,6 +11,25 @@ import dataset
 
 from string import punctuation
 
+def teacher_loss_fn(start_logits, end_logits,
+            start_positions, end_positions,
+            teacher_start_labels, teacher_start_mask,
+            teacher_end_labels, teacher_end_mask):
+    m = torch.nn.LogSoftmax(dim=1)
+    loss_fct = torch.nn.KLDivLoss()
+    start_loss = loss_fct(m(start_logits), start_positions)
+    end_loss = loss_fct(m(end_logits), end_positions)
+    total_normal_loss = (start_loss + end_loss)
+
+    loss_fct_student = torch.nn.KLDivLoss(reduction='none')
+    start_loss_student = loss_fct_student(m(start_logits), teacher_start_labels)
+    start_loss_student = torch.mean(teacher_start_mask * start_loss_student)
+    end_loss_student = loss_fct_student(m(end_logits), teacher_end_labels)
+    end_loss_student = torch.mean(teacher_end_mask * end_loss_student)
+    total_student_loss = (start_loss_student + end_loss_student)
+
+    return total_loss + total_student_loss
+
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
     m = torch.nn.LogSoftmax(dim=1)
@@ -57,18 +76,28 @@ def train_fn(df_train, valid_data_loader, model, optimizer, device, writer, mode
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
+            teacher_start_labels = d['teacher_start_labels']
+            teacher_start_mask = d['teacher_start_mask']
+            teacher_end_labels = d['teacher_end_labels']
+            teacher_end_mask = d['teacher_end_mask']
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = end_labels.to(device, dtype=torch.float)
+            teacher_start_labels = teacher_start_labels.to(device, dtype=torch.float)
+            teacher_start_mask = teacher_start_mask.to(device, dtype=torch.float)
+            teacher_end_labels = teacher_end_labels.to(device, dtype=torch.float)
+            teacher_end_mask = teacher_end_mask.to(device, dtype=torch.float)
 
             model.train()
             
             outputs_start, outputs_end = model(ids=ids, mask=mask)
         
-            loss = loss_fn(outputs_start, outputs_end,
-                           start_labels, end_labels)
+            loss = teacher_loss_fn(outputs_start, outputs_end,
+                           start_labels, end_labels,
+                           teacher_start_labels, teacher_start_mask,
+                           teacher_end_labels, teacher_end_mask)
 
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
