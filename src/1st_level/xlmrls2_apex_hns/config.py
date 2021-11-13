@@ -14,6 +14,8 @@ if is_kaggle:
     TRAINING_FILE = f'../input/{my_impl}/data/train_folds_external_cleaned_dropped.csv'
     TEST_FILE = f'../input/{comp_name}/test.csv'
     SUB_FILE = f'../input/{comp_name}/sample_submission.csv'
+    TRAINING_FILE_PICKLE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/oof_prob/xlmrls2_apex.pkl'
+    PRETRAINED_MODEL_PATH = f'/content/gdrive/MyDrive/Dataset/{drive_name}/model_save/1st_level/xlmrls2_apex'
     MODEL_SAVE_PATH = f'.'
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
@@ -39,7 +41,7 @@ USE_APEX = False
 SEEDS = [12, 25, 42, 1000, 2021]
 N_FOLDS = 5
 EPOCHS = 2
-#NEGATIVE_POSITIVE_RATIO = 3.0
+NEGATIVE_POSITIVE_RATIO = 1.0
 
 SHUFFLE_AUGMENT_RATE = 1.0
 
@@ -70,7 +72,7 @@ SWA_FREQ = 30
 
 SAVE_CHECKPOINT_TYPE = 'best_iter' #'best_iter', 'best_epoch' or 'last_epoch'
 EVAL_SCHEDULE = [
-                (10., 500*ACCUMULATION_STEPS),
+                (10., 50*ACCUMULATION_STEPS),
                 ]
 
 

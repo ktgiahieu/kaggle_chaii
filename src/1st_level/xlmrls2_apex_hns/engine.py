@@ -32,28 +32,13 @@ def classifier_loss_fn(logits, labels):
     loss = loss_fct(m(logits), labels)
     return loss
 
-def train_fn(df_train, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
+def train_fn(train_data_loader, valid_data_loader, model, optimizer, device, writer, model_path, scheduler=None, df_valid=None, valid_dataset=None):  
     model_path_filename = model_path.split('/')[-1]
     best_val_score = None
     step = 0
     last_eval_step = 0
     eval_period = config.EVAL_SCHEDULE[0][1]   
     for epoch in range(config.EPOCHS):
-        train_dataset = dataset.ChaiiDataset(
-            fold=fold,
-            ids=df_train.id.values,
-            contexts=df_train.context.values,
-            questions=df_train.question.values,
-            answers=df_train.answer_text.values,
-            answer_starts=df_train.answer_start.values,
-            languages=df_train.language.values,
-            mode='train')
-
-        train_data_loader = torch.utils.data.DataLoader(
-            train_dataset,
-            batch_size=config.TRAIN_BATCH_SIZE,
-            num_workers=4,
-            shuffle=True)
         losses = utils.AverageMeter()
         tk0 = tqdm.tqdm(train_data_loader, total=len(train_data_loader))
         model.zero_grad()
