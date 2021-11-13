@@ -24,7 +24,7 @@ else: #colab
     drive_name = 'Chaii'
     model_save = 'muril_apex_know'
     
-    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_external_cleaned_dropped.csv'
+    TRAINING_FILE = f'/content/{repo_name}/data/train_folds_cleaned_dropped.csv'
     TEST_FILE = f'/content/{repo_name}/data/test.csv'
     SUB_FILE = f'/content/{repo_name}/data/sample_submission.csv'
     TEACHER_PICKLE_FILE = f'/content/gdrive/MyDrive/Dataset/{drive_name}/teacher_logit/muril_c1_toext_diff.pkl'
