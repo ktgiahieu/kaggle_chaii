@@ -31,7 +31,7 @@ def run(fold):
     model = models.ChaiiModel(conf=model_config, fold=fold)
     model.to(device)
     model.load_state_dict(torch.load(
-        f'{config.TRAINED_MODEL_PATH}/model_{fold+1}_{seed}.bin'),
+        f'{config.TRAINED_MODEL_PATH}/model_{fold}_{seed}.bin'),
         strict=False)
     model.eval()
 
@@ -42,7 +42,6 @@ def run(fold):
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
         answer_starts=df_valid.answer_start.values,
-        languages=df_valid.language.values,
         mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(

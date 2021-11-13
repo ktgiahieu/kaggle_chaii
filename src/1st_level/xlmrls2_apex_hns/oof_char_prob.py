@@ -7,15 +7,13 @@ import numpy as np
 import pandas as pd
 import transformers
 import tqdm.autonotebook as tqdm
-from sklearn.metrics import confusion_matrix
-
 
 import utils
 import config
 import models
 import dataset
 import engine
-
+char_probs = {}
 
 def run(fold):
     seed = config.SEEDS[fold]
@@ -30,9 +28,14 @@ def run(fold):
 
     model = models.ChaiiModel(conf=model_config, fold=fold)
     model.to(device)
-    model.load_state_dict(torch.load(
-        f'{config.TRAINED_MODEL_PATH}/model_{fold+1}_{seed}.bin'),
-        strict=False)
+    if config.is_kaggle:
+        if fold<=2:
+            model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+        else:
+            model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
+    else:
+        model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+    model.load_state_dict(torch.load(model_path), strict=False)
     model.eval()
 
     valid_dataset = dataset.ChaiiDataset(
@@ -42,7 +45,6 @@ def run(fold):
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
         answer_starts=df_valid.answer_start.values,
-        languages=df_valid.language.values,
         mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
@@ -53,15 +55,8 @@ def run(fold):
 
     
     losses = utils.AverageMeter()
-    true_labels = []
-    predicted_labels = []
-
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
-
-    m = torch.nn.Sigmoid()
+    predicted_labels_per_fold_start = []
+    predicted_labels_per_fold_end = []
     with torch.no_grad():
       
         tk0 = tqdm.tqdm(valid_data_loader, total=len(valid_data_loader))
@@ -70,66 +65,49 @@ def run(fold):
             mask = d['mask']
             start_labels = d['start_labels']
             end_labels = d['end_labels']
-            classifier_labels = start_labels[:,0] == 0
 
             ids = ids.to(device, dtype=torch.long)
             mask = mask.to(device, dtype=torch.long)
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
-            classifier_labels = classifier_labels.to(device, dtype=torch.float)
 
             outputs_start, outputs_end = model(ids=ids, mask=mask)
-            outputs = 1 - (torch.softmax(outputs_start[:,:-1],dim=1)[:,0] + torch.softmax(outputs_end[:,:-1],dim=1)[:,0])/2
             
-            loss = engine.classifier_loss_fn(outputs, classifier_labels)
-
+            loss = engine.loss_fn(outputs_start, outputs_end,
+                           start_labels, end_labels)
             losses.update(loss.item(), ids.size(0))
             tk0.set_postfix(loss=losses.avg)
 
-            if len(outputs.size()) > 1:
-                outputs = outputs.squeeze(-1)
-            outputs = outputs.cpu().detach().numpy() # 0 - 1
+            outputs_start = outputs_start.cpu().detach()
+            outputs_end = outputs_end.cpu().detach()
 
-            if len(classifier_labels.size()) > 1:
-                classifier_labels = classifier_labels.squeeze(-1)
-            classifier_labels = classifier_labels.cpu().detach().numpy()
-            
-            true_labels.extend(classifier_labels.tolist())
-            predicted_labels.extend(outputs.tolist())
-
-            outputs = outputs > 0.5
-            tn, fp, fn, tp = confusion_matrix(classifier_labels, outputs, labels=[0, 1]).ravel()
-
-            TP += tp
-            TN += tn
-            FP += fp
-            FN += fn
+            predicted_labels_per_fold_start.append(outputs_start)
+            predicted_labels_per_fold_end.append(outputs_end)
     
-    all_features = valid_dataset.features
-    for i,feature in enumerate(all_features):
-        feature['true_labels'] = true_labels[i]
-        feature['predicted_labels'] = predicted_labels[i]
-        feature['kfold'] = fold
-        all_features[i] = feature
+    # Raw predictions
+    predicted_labels_per_fold_start = torch.cat(
+        tuple(x for x in predicted_labels_per_fold_start), dim=0)
+    predicted_labels_per_fold_end = torch.cat(
+        tuple(x for x in predicted_labels_per_fold_end), dim=0)
+    #Post process 
+    ## Baseline
+    #predicted_labels_per_fold_start = torch.softmax(predicted_labels_per_fold_start, dim=-1).numpy()
+    #predicted_labels_per_fold_end = torch.softmax(predicted_labels_per_fold_end, dim=-1).numpy()
+    #predictions = utils.postprocess_qa_predictions(df_valid, valid_dataset.features, 
+    #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
+    
+    # Heatmap
+    char_prob = utils.postprocess_char_prob(df_valid, valid_dataset.features, 
+                                                   (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
 
-    print(f'Loss = {losses.avg}')
-    positive_rate = (TP+FP)/(TP+TN+FP+FN)
-    print(f'Val positive_rate = {positive_rate}')
-    accuracy = (TP+TN)/(TP+TN+FP+FN)
-    print(f'Val accuracy = {accuracy}')
-    recall = TP/(TP+FN)
-    print(f'Val recall = {recall}')
-
-    return all_features
+    char_probs.update(char_prob)
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
-    final_features = []
-    for i in range(5):
+    for i in range(config.N_FOLDS):
         utils.seed_everything(seed=config.SEEDS[i])
-        all_features = run(i)
-        final_features.extend(all_features)
+        run(i)
         torch.cuda.empty_cache()
         gc.collect()
 
@@ -138,4 +116,4 @@ if __name__ == '__main__':
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(final_features, handle)
+        pickle.dump(char_probs, handle)
