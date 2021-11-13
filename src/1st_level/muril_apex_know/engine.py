@@ -28,7 +28,7 @@ def teacher_loss_fn(start_logits, end_logits,
     end_loss_student = torch.mean(teacher_end_mask * end_loss_student)
     total_student_loss = (start_loss_student + end_loss_student)
 
-    return total_loss + total_student_loss
+    return total_normal_loss + total_student_loss
 
 def loss_fn(start_logits, end_logits,
             start_positions, end_positions):
