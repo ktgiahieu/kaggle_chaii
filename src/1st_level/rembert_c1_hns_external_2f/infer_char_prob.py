@@ -28,13 +28,11 @@ def run():
     model_config.output_hidden_states = True
 
     test_dataset = dataset.ChaiiDataset(
-        fold=0,
         ids=df_test.id.values,
         contexts=df_test.context.values,
         questions=df_test.question.values,
         answers=df_test.answer_text.values,
         answer_starts=df_test.answer_start.values,
-        languages=df_test.language.values,
         mode='infer')
 
     data_loader = torch.utils.data.DataLoader(
@@ -45,19 +43,22 @@ def run():
     
     predicted_labels_start = []
     predicted_labels_end = []
-
-        
-    for i in range(config.N_FOLDS): 
-        print(f'Infer fold {i+1}')
-        seed = config.SEEDS[i]
-        model = models.ChaiiModel(conf=model_config, fold=i)
+    all_models = []
+    for seed in config.SEEDS:
+        model = models.ChaiiModel(conf=model_config)
         model.to(device)
         model.eval()
-        if config.is_kaggle:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
-        else:
-            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
-        model.load_state_dict(torch.load(model_path, map_location="cuda"))
+        all_models.append(model)
+    for i in [0,1]:  
+        for s, seed in enumerate(config.SEEDS):
+            if config.is_kaggle:
+                if i<=2:
+                    model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{i}_{seed}.bin'
+                else:
+                    model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{i}_{seed}.bin'
+            else:
+                model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+            all_models[s].load_state_dict(torch.load(model_path, map_location="cuda"))
 
         predicted_labels_per_fold_start = []
         predicted_labels_per_fold_end = []
@@ -74,7 +75,17 @@ def run():
                 start_labels = start_labels.to(device, dtype=torch.float)
                 end_labels = start_labels.to(device, dtype=torch.float)
 
-                outputs_start, outputs_end = model(ids=ids, mask=mask)
+
+                outputs_seeds_start = []
+                outputs_seeds_end = []
+                for s in range(len(config.SEEDS)):
+                    outputs_start, outputs_end = all_models[s](ids=ids, mask=mask)
+
+                    outputs_seeds_start.append(outputs_start)
+                    outputs_seeds_end.append(outputs_end)
+
+                outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
+                outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
 
                 outputs_start = outputs_start.cpu().detach()
                 outputs_end = outputs_end.cpu().detach()
@@ -89,10 +100,6 @@ def run():
 
         predicted_labels_start.append(predicted_labels_per_fold_start)
         predicted_labels_end.append(predicted_labels_per_fold_end)
-
-        del model
-        torch.cuda.empty_cache()
-        gc.collect()
     
     # Raw predictions
     predicted_labels_start = torch.stack(
@@ -116,6 +123,7 @@ def run():
 
     del test_dataset
     del data_loader
+    del all_models
     torch.cuda.empty_cache()
     gc.collect()
 

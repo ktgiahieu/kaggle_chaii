@@ -18,7 +18,7 @@ if is_kaggle:
     TRAINED_MODEL_PATH = f'../input/{my_model_dataset}'
     INFERED_PICKLE_PATH = '.'
 
-    MODEL_CONFIG = '../input/ggoogle-muril-large-cased-squad2-1ep-5e6'
+    MODEL_CONFIG = '../input/google-muril-large-cased-squad2-1ep-5e6'
 
 else: #colab
     repo_name = 'kaggle_chaii'
@@ -38,8 +38,8 @@ else: #colab
 DEBUG = False
 USE_APEX = False
 # Model params
-SEEDS = [43, 1101, 2022, 12, 45,22, 5]
-N_FOLDS = 7
+SEEDS = [43, 1101, 2022, 12, 45]
+N_FOLDS = 5
 EPOCHS = 1
 NEGATIVE_POSITIVE_RATIO = 1.0
 
@@ -60,10 +60,10 @@ TOKENIZER = AutoTokenizer.from_pretrained(
 CONF = AutoConfig.from_pretrained(
     MODEL_CONFIG)
 
-N_LAST_HIDDEN = [6,  9, 12, 4, 8, 5, 10]
+N_LAST_HIDDEN = [6,  9, 12, 4, 8]
 BERT_DROPOUT = 0.1
-HIGH_DROPOUT = [0.45, 0.4, 0.3, 0.5, 0.35, 0.25, 0.55]
-SOFT_ALPHA = [0.9, 0.8, 0.7, 0.5, 0.55, 0.75, 0.6]
+HIGH_DROPOUT = [0.45, 0.4, 0.3, 0.5, 0.35]
+SOFT_ALPHA = [0.9, 0.8, 0.7, 0.5, 0.55]
 WARMUP_RATIO = 0.1
 
 USE_SWA = False

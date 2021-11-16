@@ -68,9 +68,12 @@ def jaccard_array(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
 
-def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, augment=False):
-    with open(config.TEACHER_PICKLE_FILE, 'rb') as handle:
-        teacher_logits = pickle.load(handle)
+def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages, fold, is_train=False):
+    if is_train:
+        with open(config.TEACHER_PICKLE_FILE, 'rb') as handle:
+            teacher_logits = pickle.load(handle)
+    else:
+        teacher_logits = None
     
     features = []
     for id, orig_context, orig_question, orig_answer, orig_answer_start, language in zip(ids, orig_contexts, orig_questions, orig_answers, orig_answer_starts, languages):
@@ -85,7 +88,7 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
         all_aug_answers = [orig_answer]
         all_aug_answer_starts = [orig_answer_start]
 
-        if augment:
+        if is_train:
             if re.search('[a-zA-Z]', id) or int(id) > 6100:
                 if random.random() < config.SHUFFLE_AUGMENT_RATE:
                     # Split context to sentences
@@ -249,19 +252,22 @@ def preprocess_data(tokenizer, ids, orig_contexts, orig_questions, orig_answers,
                     token_end_index -= 1
                 token_answer_end_index = token_end_index
 
-                teacher_logit_start, teacher_logit_end = teacher_logits[id]
                 teacher_start_labels = [0]*(len(input_ids))
                 teacher_start_mask = [0]*(len(input_ids))
                 teacher_end_labels = [0]*(len(input_ids))
                 teacher_end_mask = [0]*(len(input_ids))
-                for i in range(token_answer_start_index, token_answer_end_index + 1):
-                    teacher_start_labels[i] = teacher_logit_start[offsets[i][0]]
-                    teacher_start_mask[i] = 1
+                if is_train:
+                    teacher_logit_start, teacher_logit_end = teacher_logits[id]
+                    
+                    for i in range(token_answer_start_index, token_answer_end_index + 1):
+                        teacher_start_labels[i] = teacher_logit_start[offsets[i][0]]
+                        teacher_start_mask[i] = 1
 
-                    teacher_end_labels[i] = teacher_logit_end[offsets[i][1]-1]
-                    teacher_end_mask[i] = 1
+                        teacher_end_labels[i] = teacher_logit_end[offsets[i][1]-1]
+                        teacher_end_mask[i] = 1
+
                 if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
-                    if aug_idx > 0:
+                    if aug_idx > 0: #skip all augment negative samples
                         continue
                     
                     targets_start = cls_index
@@ -350,11 +356,11 @@ class ChaiiDataset:
             self.sampled_features = hard_negative_sampling(self.features)
         else:
             if mode=='train':
-                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=True)
+                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, is_train=True)
                 #self.sampled_features = uniform_negative_sampling(self.features, len(ids))
                 self.sampled_features = self.features
             else:
-                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, augment=False)
+                self.features = preprocess_data(self.tokenizer, ids, contexts, questions, answers, answer_starts, languages, fold, is_train=False)
         
     def __len__(self):
         return len(self.sampled_features) if self.mode == 'train' else len(self.features)

@@ -13,11 +13,9 @@ import config
 import models
 import dataset
 import engine
-char_probs = {}
+predicted_labels = {}
 
 def run(fold):
-    seed = config.SEEDS[fold]
-
     dfx = pd.read_csv(config.TRAINING_FILE)
     df_valid = dfx[dfx.kfold == fold].reset_index(drop=True)
 
@@ -26,21 +24,27 @@ def run(fold):
         config.MODEL_CONFIG)
     model_config.output_hidden_states = True
 
-    model = models.ChaiiModel(conf=model_config, fold=fold)
-    model.to(device)
-    if config.is_kaggle:
-        model_path = f'{config.TRAINED_MODEL_PATH}/model_{i+1}_{seed}.bin'
-    model.load_state_dict(torch.load(model_path), strict=False)
-    model.eval()
+    seed_models = []
+    for seed in config.SEEDS:
+        model = models.ChaiiModel(conf=model_config)
+        model.to(device)
+        if config.is_kaggle:
+            if fold<=2:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p1/model_{fold}_{seed}.bin'
+            else:
+                model_path = f'{config.TRAINED_MODEL_PATH}-p2/model_{fold}_{seed}.bin'
+        else:
+            model_path = f'{config.TRAINED_MODEL_PATH}/model_{i}_{seed}.bin'
+        model.load_state_dict(torch.load(model_path), strict=False)
+        model.eval()
+        seed_models.append(model)
 
     valid_dataset = dataset.ChaiiDataset(
-        fold=fold,
         ids=df_valid.id.values,
         contexts=df_valid.context.values,
         questions=df_valid.question.values,
         answers=df_valid.answer_text.values,
         answer_starts=df_valid.answer_start.values,
-        languages=df_valid.language.values,
         mode='valid')
 
     valid_data_loader = torch.utils.data.DataLoader(
@@ -67,7 +71,16 @@ def run(fold):
             start_labels = start_labels.to(device, dtype=torch.float)
             end_labels = start_labels.to(device, dtype=torch.float)
 
-            outputs_start, outputs_end = model(ids=ids, mask=mask)
+            outputs_seeds_start = []
+            outputs_seeds_end = []
+            for i in range(len(config.SEEDS)):
+                outputs_start, outputs_end = seed_models[i](ids=ids, mask=mask)
+
+                outputs_seeds_start.append(outputs_start)
+                outputs_seeds_end.append(outputs_end)
+
+            outputs_start = sum(outputs_seeds_start) / (len(config.SEEDS))
+            outputs_end = sum(outputs_seeds_end) / (len(config.SEEDS))
             
             loss = engine.loss_fn(outputs_start, outputs_end,
                            start_labels, end_labels)
@@ -93,23 +106,37 @@ def run(fold):
     #                                               (predicted_labels_per_fold_start, predicted_labels_per_fold_end))
     
     # Heatmap
-    char_prob = utils.postprocess_char_prob(df_valid, valid_dataset.features, 
+    predictions = utils.postprocess_heatmap(df_valid, valid_dataset.features, 
                                                    (predicted_labels_per_fold_start, predicted_labels_per_fold_end))  
+    
+    predicted_labels.update(predictions)
 
-    char_probs.update(char_prob)
+    df_valid['PredictionString'] = df_valid['id'].map(predictions)
+    eval_score = df_valid.apply(lambda row: utils.jaccard(row['PredictionString'],row['answer_text']), axis=1).mean()
+
+    print(f'Loss = {losses.avg}')
+    print(f'Jaccard = {eval_score}')
+    return eval_score
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1, "Please specify output pickle name."
+    utils.seed_everything(seed=config.SEEDS[0])
+    fold_scores = []
     for i in range(config.N_FOLDS):
-        utils.seed_everything(seed=config.SEEDS[i])
-        run(i)
+        fold_score = run(i)
+        fold_scores.append(fold_score)
         torch.cuda.empty_cache()
         gc.collect()
+
+    for i in range(config.N_FOLDS):
+        print(f'Fold={i}, Jaccard score = {fold_scores[i]}')
+    print(f'Mean = {np.mean(fold_scores)}')
+    print(f'Std = {np.std(fold_scores)}')
 
     if not os.path.isdir(f'{config.INFERED_PICKLE_PATH}'):
         os.makedirs(f'{config.INFERED_PICKLE_PATH}')
 
     pickle_name = sys.argv[1]
     with open(f'{config.INFERED_PICKLE_PATH}/{pickle_name}.pkl', 'wb') as handle:
-        pickle.dump(char_probs, handle)
+        pickle.dump(predicted_labels, handle)
